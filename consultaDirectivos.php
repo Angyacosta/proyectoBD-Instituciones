@@ -1,6 +1,7 @@
 <?php
 include 'conexionDB.php';
 include 'style.html';
+
 // Detecta si se está ejecutando en la consola o en un navegador
 if (php_sapi_name() === 'cli') {
 // Modo consola
@@ -47,11 +48,27 @@ default:
 echo "Acción no válida.\n";
 }
 } else {
-// Modo web
-$sql = "SELECT * FROM directivos";
-$stmt = $conn->query($sql);
+
+
+// Definir cuántos registros mostrar por página
+$limit = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Obtener la página actual, por defecto es la 1
+$offset = ($page - 1) * $limit; // Calcular el desplazamiento de la consulta
+
+// Obtener los directivos limitados
+$sql = "SELECT * FROM directivos LIMIT ? OFFSET ?";
+$stmt = $conn->prepare($sql);
+$stmt->execute([$limit, $offset]);
 $directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Obtener el total de directivos para calcular las páginas
+$sql_count = "SELECT COUNT(*) FROM directivos";
+$stmt_count = $conn->query($sql_count);
+$total_directivos = $stmt_count->fetchColumn();
+$total_pages = ceil($total_directivos / $limit); // Calcular el total de páginas
+
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -65,7 +82,7 @@ $directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <table>
         <thead>
             <tr>
-                <th colspan="2" >Directivos</th>
+                <th colspan="3" >Directivos</th>
             </tr>
             <tr>
                 <th>Código</th>
@@ -83,9 +100,21 @@ $directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         </tbody>
     </table>
+<div class="pagination">
+        <!-- Crear los enlaces de paginación -->
+        <?php if ($page > 1): ?>
+            <a href="?page=<?php echo $page - 1; ?>">Anterior</a>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <a href="?page=<?php echo $i; ?>" <?php echo ($i == $page) ? 'style="background-color: #0277bd;"' : ''; ?>><?php echo $i; ?></a>
+        <?php endfor; ?>
+
+        <?php if ($page < $total_pages): ?>
+            <a href="?page=<?php echo $page + 1; ?>">Siguiente</a>
+        <?php endif; ?>
+    </div>
 </div>
-
-
 <div class="form-container">
     <!-- Formulario de creación -->
     <div class="form-section">
