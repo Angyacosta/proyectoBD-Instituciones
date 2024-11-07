@@ -11,7 +11,7 @@
         margin-top: 20px;
     }
     .table-container {
-        width: 100%;
+        width: 80%;
         padding: 20px;
         box-sizing: border-box;
     }
@@ -20,7 +20,8 @@
         border-collapse: collapse;
         margin-bottom: 20px;
         background-color : #90cafe; 
-        border:2;
+        border:3 ;
+        margin-right: 0; /* Alinea la tabla a la izquierda */
         
     }
     th, td {
@@ -32,6 +33,21 @@
     th {
         background-color: #0288d1; /* Azul fuerte para los encabezados */
         color: white;
+    }
+    .pagination {
+        text-align: center;
+        margin-top:20px ;
+    }
+    .pagination a{
+        padding: 8px 16 px;
+        margin:0 5px;
+        background-color: #f2f2f2;
+        color: black;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    .pagination a:hover{
+        background-color: #0277bd;
     }
     .table-title {
         font-size: 24px;
@@ -77,4 +93,4 @@
     button:hover {
         background-color: #0277bd;
     }
-</style>    
+</style>
