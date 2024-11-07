@@ -1,7 +1,6 @@
 <?php
-include ('conexionDB.php');
-
-
+include 'conexionDB.php';
+include 'style.html';
 // Detecta si se está ejecutando en la consola o en un navegador
 if (php_sapi_name() === 'cli') {
 // Modo consola
@@ -57,86 +56,6 @@ $directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Directivos</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #ffffff; /* Fondo azul claro */
-        margin: 0;
-        padding: 0;
-    }
-    h1 {
-        color: #333;
-        text-align: center;
-        margin-top: 20px;
-    }
-    .table-container {
-        width: 100%;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-        background-color : #90cafe; 
-        border:2;
-        
-    }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: center;
-        border: black 1px solid;
-    }
-    th {
-        background-color: #0288d1; /* Azul fuerte para los encabezados */
-        color: white;
-    }
-    .table-title {
-        font-size: 24px;
-        font-weight: bold;
-        color: #0288d1;
-    }
-    .form-container {
-        display: flex;
-        justify-content: space-between;
-        padding: 20px;
-        box-sizing: border-box;
-        background-color: #ffffff; 
-    }
-    .form-section {
-        width: 32%; /* Cada formulario ocupa un tercio del espacio */
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .form-section h2 {
-        font-size: 18px;
-        color: #333;
-        text-align: center;
-    }
-    input[type="text"] {
-        width: 100%;
-        padding: 8px;
-        margin: 5px 0;
-        box-sizing: border-box;
-    }
-    button {
-        background-color: #0288d1; /* Azul fuerte */
-        color: white;
-        padding: 10px;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        width: 100%;
-        margin-top: 10px;
-        border-radius: 5px;
-    }
-    button:hover {
-        background-color: #0277bd;
-    }
-</style>
 </head>
 <body>
 
@@ -206,7 +125,8 @@ $directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 <?php
-
+$showCreateForm = true; // Bandera para mostrar el formulario de creación
+$showNameForm = false;   // Bandera para mostrar el formulario de nombre
 // Maneja la creación, actualización y eliminación
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['check_create'])) {
