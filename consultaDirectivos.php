@@ -1,6 +1,5 @@
 <?php
 include 'conexionDB.php';
-include 'style.html';
 
 // Detecta si se está ejecutando en la consola o en un navegador
 if (php_sapi_name() === 'cli') {
@@ -12,12 +11,11 @@ exit(1);
 $action = $argv[1];
 switch ($action) {
 case 'create':
-$cod_directivo = readline("codigo: ");
 $nomb_directivo = readline("Nombres: ");
 $apell_directivo = readline("Apellidos: ");
-$sql = "INSERT INTO directivos(cod_directivo,nomb_directivo,apell_directivo) VALUES (?,?,?)";
+$sql = "INSERT INTO directivos(nomb_directivo,apell_directivo) VALUES (?,?)";
 $stmt = $conn->prepare($sql);
-$stmt->execute([$cod_directivo ,$nomb_directivo,$apell_directivo ]);
+$stmt->execute([$nomb_directivo,$apell_directivo ]);
 echo "Directivo creado con éxito.\n";
 break;
 case 'read':
@@ -120,10 +118,13 @@ $total_pages = ceil($total_directivos / $limit); // Calcular el total de página
     <div class="form-section">
         <h2>Crear Directivo</h2>
         <form method="POST">
-            <label for="cod_directivo_create">Código del Directivo:</label>
-            <input type="text" name="cod_directivo_create" required>
+            <label for="nomb_directivo_create">Nombre:</label>
+            <input type="text" name="nomb_directivo_create" required>
             <br>
-            <button type="submit" name="check_create">siguiente</button>
+            <label for="apell_directivo_create">Apellidos: </label>
+            <input type="text" name="apell_directivo_create"required>
+            <br>
+            <button type="submit" name="create">Crear</button>
         </form>
     </div>
 
@@ -134,13 +135,7 @@ $total_pages = ceil($total_directivos / $limit); // Calcular el total de página
             <label for="cod_directivo_update">Código del Directivo:</label>
             <input type="text" name="cod_directivo_update" required>
             <br>
-            <label for="nomb_directivo_update">Nuevos Nombres:</label>
-            <input type="text" name="nomb_directivo_update" required>
-            <br>
-            <label for="apell_directivo_update">Nuevos Apellidos: </label>
-            <input type="text" name="apell_directivo_update"required>
-            <br>
-            <button type="submit" name="update">Actualizar</button>
+            <button type="submit" name="update">siguiente</button>
         </form>
     </div>
 
@@ -161,54 +156,18 @@ $total_pages = ceil($total_directivos / $limit); // Calcular el total de página
 
 
 <?php
-$showCreateForm = true; // Bandera para mostrar el formulario de creación
+include 'style.html';
+$showCreateForm = true; // Bandera para mostrar el formulario de actuallizacion
 $showNameForm = false;   // Bandera para mostrar el formulario de nombre
 // Maneja la creación, actualización y eliminación
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['check_create'])) {
-        $cod_directivo = $_POST['cod_directivo_create'];
-    
-        // Verificar longitud del código
-        if (strlen($cod_directivo) > 3) {
-            echo "<script>alert('El código de directivo debe tener máximo 3 caracteres. Intenta con un código diferente.');</script>";
-        } else {
-            // Verificar si el código de directivo ya existe
-            $sql_check = "SELECT COUNT(*) FROM directivos WHERE cod_directivo = ?";
-            $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->execute([$cod_directivo]);
-            $exists = $stmt_check->fetchColumn();
-    
-            if ($exists > 0) {
-                echo "<script>alert('El código de directivo ya existe. Intenta con un código diferente.');</script>";
-            } else {
-                //si el codigo no existe pide los nombres y apellidos 
-                echo '<div class="form-section">
-                <h2>Crear Directivo</h2>
-                <form method="POST">
-                    <input type="hidden" name="cod_directivo_create" value="'.htmlspecialchars($cod_directivo).'">
-                    <label for="nomb_directivo_create">Nombres:</label>
-                    <input type="text" name="nomb_directivo_create" required>
-                    <br>
-                    <label for="apell_directivo_create">Apellidos:</label>
-                    <input type="text" name="apell_directivo_create" required>
-                    <br>
-                    <button type="submit" name="create">Crear Directivo</button>
-                </form>
-              </div>';
-            }
-        }
-    }
-    
     if (isset($_POST['create'])) {
-        // Obtener los datos del formulario
-        $cod_directivo = $_POST['cod_directivo_create'];
         $nomb_directivo = $_POST['nomb_directivo_create'];
         $apell_directivo= $_POST['apell_directivo_create'];
-    
         // Insertar el nuevo directivo
-        $sql = "INSERT INTO directivos (cod_directivo, nomb_directivo, apell_directivo) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO directivos (nomb_directivo, apell_directivo) VALUES ( ?, ?)";
         $stmt = $conn->prepare($sql);
-        if ($stmt->execute([$cod_directivo, $nomb_directivo, $apell_directivo])) {
+        if ($stmt->execute([$nomb_directivo, $apell_directivo])) {
             echo "<script>
                     alert('Directivo creado con éxito.');
                     window.location.href = window.location.href;
@@ -217,34 +176,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<p>Error al crear el directivo.</p>";
         }
     }elseif (isset($_POST['update'])) {
-    // Actualizar directivo
-    $cod_directivo = $_POST['cod_directivo_update'];
-    $nomb_directivo = $_POST['nomb_directivo_update'];
-    $apell_directivo = $_POST['apell_directivo_update'];
+        // Obtener los datos del formulario de actualización
+        $cod_directivo = $_POST['cod_directivo_update'];
         
-    // Verificar si el código de directivo existe
-    $sql_check = "SELECT COUNT(*) FROM directivos WHERE cod_directivo = ?";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->execute([$cod_directivo]);
-    $exists = $stmt_check->fetchColumn();
+        // Verificar si el código de directivo existe
+        $sql_check = "SELECT COUNT(*) FROM directivos WHERE cod_directivo = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->execute([$cod_directivo]);
+        $exists = $stmt_check->fetchColumn();
 
-    if ($exists == 0) {
-        echo "<script>alert('El código que desea actualizar no se encuentra en la tabla. Intenta de nuevo');</script>";
-    } else {
-        // Actualizar el directivo
-        $sql = "UPDATE directivos SET nomb_directivo = ?, apell_directivo=? WHERE cod_directivo = ?";
-        $stmt = $conn->prepare($sql);
-        if ($stmt->execute([$nomb_directivo, $apell_directivo, $cod_directivo])) {
-            echo "<script>
-        alert('Directivo actualizado con éxito.');
-        window.location.href = window.location.href;
-      </script>";
-            exit;
+        if ($exists == 0) {
+            // Si el código no existe, mostrar mensaje de error
+            echo "<script>alert('El código que desea actualizar no se encuentra en la tabla. Intenta de nuevo');</script>";
         } else {
-            echo "<p>Error al actualizar el directivo.</p>";
+            // Si el código existe, mostrar el formulario de actualización con los datos existentes
+            // Primero, obtenemos los datos actuales del directivo
+            $sql_get = "SELECT nomb_directivo, apell_directivo, cod_directivo FROM directivos WHERE cod_directivo = ?";
+            $stmt_get = $conn->prepare($sql_get);
+            $stmt_get->execute([$cod_directivo]);
+            $directivo = $stmt_get->fetch(PDO::FETCH_ASSOC);
+
+            if ($directivo) {
+                // Mostrar formulario con los datos actuales
+                echo "
+                <div id='update_form'>
+                    <h3>Actualizar Directivo</h3>
+                    <form method='POST'>
+                        <label for='cod_directivo_update'>codigo:</label>
+                        <input type='text' name='cod_directivo_update' value='{$directivo['cod_directivo']}' readonly>
+                        <br>
+                        <label for='nomb_directivo_update'>Nombres:</label>
+                        <input type='text' name='nomb_directivo_update' value='{$directivo['nomb_directivo']}'>
+                        <br>
+                        <label for='apell_directivo_update'>Apellidos:</label>
+                        <input type='text' name='apell_directivo_update' value='{$directivo['apell_directivo']}'>
+                        <br>
+                        <button type='submit' name='update_directivo'>Actualizar</button>
+                    </form>
+                </div>";
+            }
         }
     }
 
+    // Aquí procesamos la actualización del directivoe
+    elseif (isset($_POST['update_directivo'])) {
+        $cod_directivo = $_POST['cod_directivo_update'];
+        $nomb_directivo = $_POST['nomb_directivo_update'];
+        $apell_directivo = $_POST['apell_directivo_update'];
+
+        // Actualizar el directivo en la base de datos
+        $sql_update = "UPDATE directivos SET nomb_directivo  = ?, apell_directivo = ? WHERE cod_directivo = ?";
+        $stmt_update = $conn->prepare($sql_update);
+        if ($stmt_update->execute([$nomb_directivo, $apell_directivo, $cod_directivo])) {
+            echo "<script>
+                    alert('Directivo actualizado con éxito.');
+                    window.location.href = window.location.href; // Recarga la página
+                  </script>";   
+        } else {
+            echo "<p>Error al actualizar el directivo. Mensaje de error: " ;
+        }        
     } elseif (isset($_POST['delete'])) {
         // Eliminar directivo
         $cod_directivo = $_POST['cod_directivo_delete'];
