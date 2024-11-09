@@ -204,7 +204,7 @@ DECLARE
     menor_cod_disponible INT;
 BEGIN
     -- Encuentra el menor código faltante
-    SELECT count(cod_directivo + 1) 
+    SELECT min(cod_directivo + 1) 
     INTO menor_cod_disponible
     FROM directivos
     WHERE (cod_directivo + 1) NOT IN (SELECT cod_directivo FROM directivos);
