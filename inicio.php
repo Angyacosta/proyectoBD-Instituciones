@@ -1,5 +1,3 @@
-//por ahora esinicio.php despues es index.php
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -59,15 +57,19 @@
         }
         .update-link {
             margin: 20px 0;
+            display: flex;
+            gap: 20px; /* Espacio entre los botones */
+            margin: 20px 0;
         } 
         .update-link a {
             display: inline-block;
+            margin: 0 10px;
             padding: 12px 20px;
             background-color: #0277bd;
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 16px;
+            
         }
         .update-link a:hover {
             background-color: #01579b;
@@ -161,6 +163,9 @@
 <?php
 include 'conexionDB.php';
 
+$limit = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Obtener la página actual, por defecto es la 1
+$offset = ($page - 1) * $limit; // Calcular el desplazamiento de la consulta
 
 $sql = "
     SELECT 
@@ -179,7 +184,7 @@ $sql = "
     i.acreditada,
     CONCAT(d.nombre_departamento, ' / ', m.nombre_munic) AS depto_munic
 FROM 
-    inst_por_municipio i
+    inst_por_municipio i 
 JOIN 
     municipios m ON i.cod_munic = m.cod_munic
 JOIN 
@@ -192,22 +197,11 @@ JOIN
     sectores S ON I.cod_sector = S.cod_sector
 JOIN 
     caracter_academico C ON I.cod_academ = C.cod_academ
-";
-$stmt = $conn->prepare($sql);
-$stmt->execute();
+ORDER BY i.cod_inst ASC LIMIT ? OFFSET ?";
 
-// Recuperar los resultados de la consulta
-$instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$limit = 10;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Obtener la página actual, por defecto es la 1
-$offset = ($page - 1) * $limit; // Calcular el desplazamiento de la consulta
-
-// Obtener los directivos limitados
-$sql = "SELECT * FROM inst_por_municipio ORDER BY cod_inst ASC LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$limit, $offset]);
-$institucione = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Obtener el total de directivos para calcular las páginas
 $sql_count = "SELECT COUNT(*) FROM inst_por_municipio";
