@@ -10,4 +10,4 @@ $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 echo "Error: " . $e->getMessage();
 exit;
 }
-    
+?>    
