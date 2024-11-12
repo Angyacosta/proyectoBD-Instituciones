@@ -21,8 +21,8 @@ break;
 case 'read':
 $sql = "SELECT * FROM directivos";
 $stmt = $conn->query($sql);
-$directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach ($directivos as $directivo) {
+$instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+foreach ($instituciones as $directivo) {
 echo "codigo: {$directivo['cod_directivo']} | Nombres: {$directivo['nomb_directivo']} | Apellidos: {$directivo['apell_directivo']} \n";
 }
 break;
@@ -57,7 +57,7 @@ $offset = ($page - 1) * $limit; // Calcular el desplazamiento de la consulta
 $sql = "SELECT * FROM directivos ORDER BY cod_directivo ASC LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$limit, $offset]);
-$directivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Obtener el total de directivos para calcular las páginas
 $sql_count = "SELECT COUNT(*) FROM directivos";
@@ -169,7 +169,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>Directivos</title>
 </head>
 <body>
-
+<div class="update-link">
+    <a href="inicio.php" class="update-btn">volver a inicio</nav></a>
+    </div>
 <div class="table-container">
     <table>
         <thead>
@@ -183,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($directivos as $directivo): ?>
+            <?php foreach ($instituciones as $directivo): ?>
             <tr>
                 <td><?php echo htmlspecialchars($directivo['cod_directivo']); ?></td>
                 <td><?php echo htmlspecialchars($directivo['nomb_directivo']); ?></td>
