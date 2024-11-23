@@ -1,0 +1,167 @@
+<style>
+/* Estilo general para el cuerpo de la página */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fc;
+    margin: 0;
+    padding: 0;
+}
+h1{
+    color: #333;
+        text-align: center;
+        margin-top: 20px;
+}
+/* Contenedor principal para centrar el formulario y la tabla */
+.container-wrapper {
+
+    gap: 10px; /* Espacio entre la tabla y el formulario */
+    padding: 20px;
+    margin: 20px auto;
+    background-color: #f2f2f2;
+    }
+
+/* Formulario más pequeño a la derecha */
+.container {
+    width: 60%; /* Ancho reducido para el formulario */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    display: inline-block;
+}.container2{
+    width: 100%; /* Ancho del formulario */
+    margin: 50px auto; /* Centrado automático con margen superior */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    display: inline-block;
+}
+
+/* Estilos para los campos del formulario */
+input[type="text"], input[type="number"], input[type="date"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+/* Estilo para los botones */
+button {
+    background-color: #6aafd7;
+    color: #fff;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+/* Efecto de hover en el botón */
+button:hover {
+    background-color: #01579b;
+} .table-container {
+    width: 80%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Estilos para la tabla */
+table {
+    width: 30%; /* Ajustar el ancho de la tabla */
+    border-collapse: collapse;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    border: 3;
+    margin-left: auto; /* Centrado horizontal */
+    margin-right: auto; /* Centrado horizontal */
+}
+
+/* Aseguramos que la tabla y sus celdas tengan el mismo diseño */
+th, td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+    font-size:12px;
+    border: black 1px solid;    
+}
+
+th {
+    background-color: #0277bd;
+    color: white;
+}/* Estilos para la paginación */
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+.pagination a{
+    padding: 8px 16 px;
+    margin:0 5px;
+    background-color: #f2f2f2;
+    color: black;
+    text-decoration: none;
+    border-radius: 5px;
+}.pagination a:hover{
+    background-color: #f0f0f0;
+}
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Estilo del botón Volver atrás, se coloca encima de la tabla */
+.update-link {
+    display: block;
+    margin-bottom: 20px; /* Espacio debajo del botón */
+}
+
+.update-link a {
+    display: inline-block;
+    padding: 12px 20px;
+    background-color: #0277bd;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+/* Efecto hover para el botón Volver atrás */
+.update-link a:hover {
+    background-color: #309cef;
+}
+
+/* Estilo para filas al pasar el mouse */
+tr:hover {
+    background-color: #e3f2fd;
+}.pagination a[style] {
+    background-color: transparent; /* Sin color de fondo para el actual */
+    font-weight: bold; /* Negrita para distinguir la página actual */
+    border-color: #000; /* Borde negro para destacar */
+}.error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none; /* Oculto inicialmente */
+        }
+        .success-message {
+            color: green;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }.form-select {
+    width: 100%; /* Todos los selects ocuparán el mismo ancho */
+    max-width: 600px; /* Ajusta este valor según el diseño */
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    margin-bottom: 10px; /* Espaciado entre campos */
+}
+
+</style>
