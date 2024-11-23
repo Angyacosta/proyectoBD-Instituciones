@@ -1,19 +1,20 @@
 <?php   
 include 'conexionDB.php';  
 try {   
+    // Consulta principal
     $query = "  
         SELECT   
-            i.nomb_inst AS nombre_ies,  
-            ip.cod_inst AS codigo_ies,  
-            i.cod_ies_padre AS ies_padre,  
-            s.nomb_sector AS sector,  
-            ca.nomb_academ AS caracter_academico,  
-            d.nomb_depto AS departamento,  
-            m.nomb_munic AS municipio,  
-            e.nomb_estado AS estado_ies,  
+            i.nomb_inst,   
+            ip.cod_inst,   
+            i.cod_ies_padre,  
+            s.nomb_sector, 
+            ca.nomb_academ, 
+            d.nomb_depto, 
+            m.nomb_munic, 
+            e.nomb_estado, 
             ip.programas_vigente,  
             ip.programas_convenio,  
-            ip.acreditada  
+            ip.acreditada   
         FROM   
             public.instituciones i  
         JOIN   
@@ -33,15 +34,67 @@ try {
     $stmt = $conn->prepare($query);  
     $stmt->execute();  
     $instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);  
+
+
+    // Obtener lista de departamentos para el select
+    $departamentosQuery = "SELECT nomb_depto FROM public.departamentos";
+    $stmtDepto = $conn->prepare($departamentosQuery);  
+    $stmtDepto->execute();  
+    $departamentos = $stmtDepto->fetchAll(PDO::FETCH_ASSOC);  
+
+    // Obtener lista de los actos administrativos
+    $actos_administrativosQuery = "SELECT nomb_admin FROM public.acto_administrativo";
+    $stmtActo = $conn->prepare($actos_administrativosQuery);  
+    $stmtActo->execute();  
+    $actos_administrativos = $stmtActo->fetchAll(PDO::FETCH_ASSOC); 
+
+    //Obtener lista de la norma de creacion
+    $normas_creacionesQuery = "SELECT nomb_norma FROM public.norma_creacion";
+    $stmtNorma= $conn->prepare($normas_creacionesQuery);  
+    $stmtNorma->execute();  
+    $normas_creaciones = $stmtNorma->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+
+    // Pasar los valores de los filtros como parámetros a la función filtros
+
+    $nombre_estado = $_POST['nombre_estado'] !== "Todos" ? $_POST['nombre_estado'] : null;
+    $nombre_sede = $_POST['nombre_sede'] !== "Todos" ? $_POST['nombre_sede'] : null;
+    $nombre_sector = $_POST['nombre_sector'] !== "Todos" ? $_POST['nombre_sector'] : null;
+    $nombre_caracter = $_POST['nombre_caracter'] !== "Todos" ? $_POST['nombre_caracter'] : null;
+    $nombre_acto = $_POST['nombre_acto'] !== "Todos" ? $_POST['nombre_acto'] : null;
+    $nombre_norma = $_POST['nombre_norma'] !== "Todos" ? $_POST['nombre_norma'] : null;
+    $nombre_depar = $_POST['nombre_depar'] !== "Todos" ? $_POST['nombre_depar'] : null;
+
+    // Llamar a la función y pasar los valores por parámetro
+    $queryFiltros = "
+        SELECT * 
+        FROM filtros(:nombre_estado, :nombre_sede, :nombre_sector, :nombre_caracter, :nombre_acto, :nombre_norma, :nombre_depar);
+    ";
+    $stmt = $conn->prepare($queryFiltros);
+
+    // Vincular parámetros
+    $stmt->bindParam(':nombre_estado', $nombre_estado, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_sede', $nombre_sede, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_sector', $nombre_sector, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_caracter', $nombre_caracter, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_acto', $nombre_acto, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_norma', $nombre_norma, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_depar', $nombre_depar, PDO::PARAM_STR);
+
+    // Ejecutar la consulta
+    $stmt->execute();
+
+    // Obtener los resultados
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {  
     echo "Error: " . $e->getMessage();  
     exit;  
-}  
-
+} 
 
 ?>  
-
 
 <!DOCTYPE html>  
 <html lang="es">  
@@ -53,15 +106,13 @@ try {
 </head>  
 <body>  
 
-<!--biblioteca CSS Bootstrap.-->
+<div class="container-fluid m-3">
+    <div class="row">
+        <div class="col-md-3">
+            <h2>Filtros de búsqueda</h2>
 
-<div class="container-fluid m-2"><!--ocupa la pantalla completa, borde de 3 por todos lados-->
-    <div class="row"><!-- alinea siempre de izq a dereche-->
-        <div class="col-md-3"><!--ocupa 3 col, alineada izq-->
-            <h2>Seleccione los filtros para la búsqueda</h2>
-
-                <!-- Formulario de Filtros de Institución -->
-            <div class="mb-4 p-3 bg-light rounded"> <!--  -->
+            <!-- Formulario de Filtros de Institución -->
+            <div class="mb-4 p-3 bg-light rounded">
                 <h5>Institución de Educación Superior</h5>
                 <form method="POST" action="">
                     <div class="form-group">
@@ -76,75 +127,100 @@ try {
                     <button type="reset" class="btn btn-warning">Limpiar</button>
                 </form>
             </div>
-        
 
-            <h1>Reporte de Instituciones por Departamento</h1>
-            <form method="POST" action="">  
-                <div class="form-group">  
-                    <label>Seleccione un Departamento:</label>  
-                    <select class="form-control" name="departamento">  
-                        <option value="todos">Todos</option>  
-                        <?php 
-                            //Consulta SQL para obtener los nombres de los departamentos
-                            $dep_query = "SELECT nomb_depto FROM public.departamentos";  // La consulta busca los departamentos
-                            $stmt = $conn->query($dep_query);  // Ejecutamos la consulta con el método query de PDO
-                            $departamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Obtenemos todos los resultados como un array asociativo
+            <div>
+                <h5 class="text-center">Departamento</h5>
+                <div class="row justify-content-center mb-4">
+                    <form method="POST" action="">
+                        <div class="form-group">
+                            <label>Seleccione un Departamento:</label>
+                            <select class="form-control" name="nombre_depar">
+                                <option value="Todos">Todos</option>
+                                <?php 
+                                    foreach ($departamentos as $departamento): 
+                                ?>  
+                                    <option value="<?= htmlspecialchars($departamento['nomb_depto']) ?>">
+                                        <?= htmlspecialchars($departamento['nomb_depto']) ?>
+                                    </option>  
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                        <button type="reset" class="btn btn-warning">Limpiar</button>
+                    </form>
+                </div>
+            </div>
 
-                            //Bucle que recorre los departamentos para mostrarlos en el select
-                            foreach ($departamentos as $departamento): 
-                        ?>  
-                        <!--Para cada departamento, mostramos una opción en el select , value es lo que se enviara al formulario-->
-                        <option value="<?= htmlspecialchars($departamento['nomb_depto']) ?>">
-                            <?= htmlspecialchars($departamento['nomb_depto']) ?>  
-                        </option>  
-                        <?php endforeach; ?>  
-                    </select>  
-                 </div>  
-                <button type="submit" class="btn btn-primary">Buscar</button>  
-                <button type="reset" class="btn btn-warning">Limpiar</button>  
-            </form>  
-
-            
             <!-- Filtros Generales -->
-            <h1 class="mt-3">Filtros Generales</h1>  
+            <h1 class="mt-3">Filtros Generales</h1>
             <form method="POST" action="">  
                 <div class="form-group">  
                     <label>Estado de la Institución:</label><br>  
-                    <input type="radio" name="estado" value="todos" checked> Todos  
-                    <input type="radio" name="estado" value="activo"> Activo (<?= $count_activo ?>)  
-                    <input type="radio" name="estado" value="inactivo"> Inactivo (<?= $count_inactivo ?>)  
+                    <input type="radio" name="nombre_estado" value="Todos" checked> Todos<br>
+                    <input type="radio" name="nombre_estado" value="Activa"> Activo  <br>
+                    <input type="radio" name="nombre_estado" value="Inactiva"> Inactivo  <br>
                 </div>  
                 <div class="form-group">  
                     <label>Tipo de sede:</label><br>  
-                    <select class="form-control" name="tipo_sede">  
-                        <option value="todos">Todos (<?= $count_tipo_sede_todos ?>)</option>  
-                        <option value="principal">Principal (<?= $count_tipo_sede_principal ?>)</option>  
-                        <option value="seccional">Seccional (<?= $count_tipo_sede_seccional ?>)</option>  
-                    </select>  
-                </div>  
-                <div class="form-group">  
-                    <label>Carácter académico:</label><br>  
-                    <select class="form-control" name="caracter_academico">  
-                        <option value="todos">Todos (<?= $count_academico_todos ?>)</option>  
-                        <option value="tecnica_profesional">Institución Técnica Profesional (<?= $count_tecnica_profesional ?>)</option>  
-                        <option value="tecnologica">Institución Tecnológica (<?= $count_tecnologica ?>)</option>  
-                        <option value="universidad">Universidad (<?= $count_universidad ?>)</option>  
+                    <select class="form-control" name="nombre_sede">  
+                        <option value="Todos">Todos</option>  
+                        <option value="Principal">Principal</option>  
+                        <option value="Seccional">Seccional</option>  
                     </select>  
                 </div>  
                 <div class="form-group">  
                     <label>Sector:</label><br>  
-                    <select class="form-control" name="sector">  
-                        <option value="todos">Todos (<?= $count_sector_todos ?>)</option>  
-                        <option value="publica">Pública (<?= $count_sector_publica ?>)</option>  
-                        <option value="privada">Privada (<?= $count_sector_privada ?>)</option>  
+                    <select class="form-control" name="nombre_sector">  
+                        <option value="Todos">Todos</option>  
+                        <option value="Oficial">Pública</option>  
+                        <option value="Privado">Privada</option>  
+                    </select>  
+                </div> 
+                <div class="form-group">  
+                    <label>Carácter académico:</label><br>  
+                    <select class="form-control" name="nombre_caracter">  
+                        <option value="Todos">Todos</option>  
+                        <option value="Institución Técnica Profesional">Institución Técnica Profesional</option>  
+                        <option value="Institución Tecnológica">Institución Tecnológica</option>  
+                        <option value="Institución Universitaria/Escuela Tecnológica">Institución Universitaria/Escuela Tecnológica</option>
+                        <option value="Universidad">Universidad</option>  
                     </select>  
                 </div>  
+                <div class="form-group">  
+                    <label>Acto administrativo:</label><br>  
+                                    <!--nombre_acto es el parametro que sera pasado a la funcion filtros-->
+                    <select class="form-control" name="nombre_acto">
+                                <option value="Todos">Todos</option>
+                                <?php 
+                                    foreach ($actos_administrativos as $acto_administrativo): 
+                                ?>  
+                                <!-- aqui va es el el nomb_admin por como se llama en la base que es en postgres-->
+                                    <option value="<?= htmlspecialchars($acto_administrativo['nomb_admin']) ?>">
+                                        <?= htmlspecialchars($acto_administrativo['nomb_admin']) ?>
+                                    </option>  
+                                <?php endforeach; ?>
+                            </select>  
+                </div> 
+                <div class="form-group">  
+                    <label>Nombre norma:</label><br>  
+                    <select class="form-control" name="nombre_norma">
+                                <option value="Todos">Todos</option>
+                                <?php 
+                                    foreach ($normas_creaciones as $norma_creacion): 
+                                ?>  
+                                    <option value="<?= htmlspecialchars($norma_creacion['nomb_norma']) ?>">
+                                        <?= htmlspecialchars($norma_creacion['nomb_norma']) ?>
+                                    </option>  
+                                <?php endforeach; ?>
+                            </select>  
+                </div> 
+
                 <button type="submit" class="btn btn-primary">Buscar</button>  
                 <button type="reset" class="btn btn-warning">Limpiar</button>  
             </form>
         </div>
 
-        <!-- Tabla de Resultados a la Derecha -->
+        <!-- Tabla de Resultados -->
         <div class="col-md-9">
             <div class="container" style="overflow-x: auto;">  
                 <table class="table table-bordered mt-2" style="text-align: center;">  
@@ -162,37 +238,35 @@ try {
                             <th>¿Acreditada?</th>  
                         </tr>  
                     </thead>  
-                    <tbody>  
-                        <?php if ($instituciones): ?>  
-                            <?php foreach ($instituciones as $inst): ?>  
-                                <tr>  
-                                    <td><?= htmlspecialchars($inst['nombre_ies']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['codigo_ies']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['ies_padre']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['sector']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['caracter_academico']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['departamento'] . " / " . $inst['municipio']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['estado_ies']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['programas_vigente']) ?></td>  
-                                    <td><?= htmlspecialchars($inst['programas_convenio']) ?></td>  
-                                    <td><?= $inst['acreditada'] ? 'Sí' : 'No' ?></td>  
-                                </tr>  
-                            <?php endforeach; ?>  
-                        <?php else: ?>  
-                            <tr>  
-                                <td colspan="10">No se encontraron datos.</td>  
-                            </tr>  
-                        <?php endif; ?>  
-                    </tbody>  
+                    <tbody>         
+
+                        <?php if (!empty($resultados)): ?>
+                            <?php foreach ($resultados as $institucion): ?>
+                                <tr>
+
+                                    <td><?= htmlspecialchars($institucion['nomb_inst']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['cod_inst']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['cod_ies_padre']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['nomb_sector']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['nomb_academ']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['nomb_depto'] . " / " . $institucion['nomb_munic']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['nomb_estado']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['programas_vigente']) ?></td>
+                                    <td><?= htmlspecialchars($institucion['programas_convenio']) ?></td>
+                                    <td><?= $institucion['acreditada'] ? 'Sí' : 'No' ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="10">No se encontraron datos.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                    
                 </table>  
-            </div>
+            </div>  
         </div>
     </div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>  
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
-</body>  
+</body>
 </html>
-
