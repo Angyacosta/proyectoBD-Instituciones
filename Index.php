@@ -105,11 +105,11 @@ try {
     <link rel="stylesheet" href="styles.css">  
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>  
-<body>  
+<body style="background-color: #f0f0f0; color: #333; font-family: Arial, sans-serif; margin: 0; padding: 0;">
 
-<!-- aqui cambia segun los nombres de sus archivos-->
-<div class="header" style="margin-bottom: 20px; padding: 10px;">
+<div class="header" style="margin-bottom: 20px; padding: 10px; width: 100%; background-color: #fff;">
     <img src="logo_men.png" alt="Logo de la institución" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+    
     <!-- Contenedor de botones -->
     <div class="buttons" style="margin-top: 10px;">
         <a href="actualizar.php" style="text-decoration: none; padding: 10px 20px; color: white; background-color: #5bc0de; border-radius: 5px; display: inline-block; margin: 10px;">Consultar Instituciones</a>
@@ -117,13 +117,14 @@ try {
     </div>
 </div>
 
+
+
 <div class="container-fluid m-3">
     <div class="row">
         <div class="col-md-3">
-            <h2>Filtros de búsqueda</h2>
             <!-- Formulario de Filtros de Institución -->
-            <div class="mb-4 p-3 bg-light rounded">
-                <h5>Institución de Educación Superior</h5>
+            <div class="mb-4 p-4 bg-light rounded border" style="margin: 3px; background-color: #f8f9fa;">
+                <h2>Institución Universitaria</h2>
                 <form method="POST" action="">
                     <div class="form-group">
                         <label>Nombre de la Institución</label>
@@ -155,11 +156,11 @@ try {
                     <button type="reset" class="btn btn-secondary">Limpiar</button> 
                 </form>
             </div>
-
             <!-- Filtros Generales -->
-            <h1 class="mt-3">Filtros Generales</h1>
+        <div class="mb-4 p-4 bg-light rounded border" style="margin: 3px; background-color: #f8f9fa;">
+            <h2 class="mt-3">Filtros Generales</h2>
             <form method="POST" action="">  
-                <div class="form-group">  
+                <div class="form-group"> 
                     <label>Estado de la Institución:</label><br>  
                     <input type="radio" name="nombre_estado" value="Todos" <?= $nombre_estado === 'Todos' ? 'checked' : '' ?> checked> Todos<br>
                     <input type="radio" name="nombre_estado" value="Activa" <?= $nombre_estado === 'Activa' ? 'checked' : '' ?>> Activo  <br>
@@ -233,10 +234,10 @@ try {
                 <button type="reset" class="btn btn-secondary">Limpiar</button>  
             </form>
         </div>
-
+    </div>
         <!-- Tabla de Resultados -->
-        <div class="col-md-9">
-            <div class="col-auto">
+        <div class="col-md-9 mb-4 p-3 bg-light rounded border" style="background-color: #f8f9fa;">
+            <div class="col-auto" style="margin: 4px">
                 <label for="num_registros" class="col-form-label">Mostrar </label>
                 <select name="num_registros" id="num_registros" class="form-select">
                     <option value="10">10</option>
@@ -249,7 +250,7 @@ try {
 
             <div class="col-auto m-4" >  
 
-                <table class="table table-bordered mt-2" style="text-align: center;">  
+                <table class="table table-bordered mt-1" style="text-align: center;">  
                     <thead class="thead-dark">  
                         <tr>  
                             <th>Nombre IES</th>  
