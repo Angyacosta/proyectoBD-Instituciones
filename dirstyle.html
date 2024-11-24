@@ -21,7 +21,7 @@
         border-collapse: collapse;
         margin-bottom: 20px;
         border:3 ;
-        
+        text-align: center;
     }
     th, td {
         border: 1px solid #ddd;
@@ -89,15 +89,15 @@
         box-sizing: border-box;
     }
     button {
-        background-color: #0288d1; /* Azul fuerte */
-        color: white;
-        padding: 10px;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        width: 100%;
-        margin-top: 10px;
-        border-radius: 5px;
+        background-color: #6aafd7;
+    color: #fff;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    transition: background-color 0.3s;
     }/* Contenedor principal para centrar el formulario y la tabla */
 .container-wrapper {
     gap: 10px; /* Espacio entre la tabla y el formulario */
@@ -107,8 +107,7 @@
     display: flex;
     width: 100%;
     min-height: 80vh; /* Asegura que ocupe al menos la altura de la pantalla */
-}
-    button:hover {
+}button:hover {
         background-color: #0288d1;
     }.update-link {
     display: block;
@@ -123,7 +122,7 @@
     text-decoration: none;
     border-radius: 5px;
 } .update-link a:hover {
-        background-color: #01579b;
+        background-color: #309cef;
     }.error-message {
             color: red;
             font-size: 12px;
@@ -174,6 +173,6 @@
 
     .form-section.active {
         display: block;
-    }
+    } 
 
 </style>
