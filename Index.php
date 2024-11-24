@@ -43,6 +43,8 @@ try {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    $instS = funcion($conn, "SELECT nomb_inst FROM public.instituciones");
+    $codinstS = funcion($conn, "SELECT cod_inst FROM public.inst_por_municipio ");
     $departamentos = funcion($conn, "SELECT nomb_depto FROM public.departamentos");
     $actos_administrativos = funcion($conn, "SELECT nomb_admin FROM public.acto_administrativo");
     $normas_creaciones = funcion($conn, "SELECT nomb_norma FROM public.norma_creacion");
@@ -55,11 +57,13 @@ try {
     $nombre_acto = $_POST['nombre_acto'] !== "Todos" ? $_POST['nombre_acto'] : null;
     $nombre_norma = $_POST['nombre_norma'] !== "Todos" ? $_POST['nombre_norma'] : null;
     $nombre_depar = $_POST['nombre_depar'] !== "Todos" ? $_POST['nombre_depar'] : null;
+    $nombre_insti = $_POST['nombre_insti'] !== "Todos" ? $_POST['nombre_insti'] : null;
+    $codigo_insti = $_POST['codigo_insti'] !== "Todos" ? $_POST['codigo_insti'] : null;
 
     // Llamar a la función y pasar los valores por parámetro
     $queryFiltros = "
         SELECT * 
-        FROM filtros(:nombre_estado, :nombre_sede, :nombre_sector, :nombre_caracter, :nombre_acto, :nombre_norma, :nombre_depar);
+        FROM filtros(:nombre_estado, :nombre_sede, :nombre_sector, :nombre_caracter, :nombre_acto, :nombre_norma, :nombre_depar, :nombre_insti, :codigo_insti);
     ";
     $stmt = $conn->prepare($queryFiltros);
 
@@ -71,6 +75,9 @@ try {
     $stmt->bindParam(':nombre_acto', $nombre_acto, PDO::PARAM_STR);
     $stmt->bindParam(':nombre_norma', $nombre_norma, PDO::PARAM_STR);
     $stmt->bindParam(':nombre_depar', $nombre_depar, PDO::PARAM_STR);
+    $stmt->bindParam(':nombre_insti', $nombre_insti, PDO::PARAM_STR);
+    $stmt->bindParam(':codigo_insti', $codigo_insti, PDO::PARAM_INT);
+
 
     // Ejecutar la consulta
     $stmt->execute();
@@ -120,11 +127,29 @@ try {
                 <form method="POST" action="">
                     <div class="form-group">
                         <label>Nombre de la Institución</label>
-                        <input type="text" class="form-control" name="nombre_institucion">
+                        <select class="form-control" name="nombre_insti">
+                        <option value="Todos" <?= isset($nombre_insti) && $nombre_insti === 'Todos' ? 'selected' : '' ?>>Todos</option>
+                            <?php 
+                                foreach ($instS as $inst): 
+                            ?>  
+                        <option value="<?= htmlspecialchars($inst['nomb_inst']) ?>" <?= isset($nombre_insti) && $nombre_insti === $inst['nomb_inst'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($inst['nomb_inst']) ?>
+                        </option>  
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Código de la Institución</label>
-                        <input type="text" class="form-control" name="codigo_institucion">
+                        <select class="form-control" name="codigo_insti">
+                        <option value="Todos" <?= isset($codigo_insti) && $codigo_insti === 'Todos' ? 'selected' : '' ?>>Todos</option>
+                            <?php 
+                                foreach ($codinstS as $codinst): 
+                            ?>  
+                        <option value="<?= htmlspecialchars($codinst['cod_inst']) ?>" <?= isset($codigo_insti) && $codigo_insti === $codinst['cod_inst'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($codinst['cod_inst']) ?>
+                        </option>  
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Buscar</button>
                     <button type="reset" class="btn btn-secondary">Limpiar</button> 
