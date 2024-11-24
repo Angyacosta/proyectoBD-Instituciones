@@ -73,8 +73,8 @@ BEGIN
     INTO cantidad
     FROM public.inst_por_municipio ipm
     JOIN public.instituciones i ON ipm.cod_ies_padre = i.cod_ies_padre
-    JOIN public.estado e ON ipm.cod_estado = e.cod_estado
-    JOIN public.norma_creacion nc ON ipm.cod_norma = nc.cod_norma
+    LEFT JOIN public.estado e ON ipm.cod_estado = e.cod_estado
+    LEFT JOIN public.norma_creacion nc ON ipm.cod_norma = nc.cod_norma
     WHERE 
         (nombre_estado IS NULL OR e.nomb_estado = nombre_estado) AND
         (nombre_norma IS NULL OR nc.nomb_norma = nombre_norma);
@@ -82,6 +82,8 @@ BEGIN
     RETURN cantidad;
 END;
 $$ LANGUAGE plpgsql;
+
+
 
 
 
