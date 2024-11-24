@@ -22,7 +22,7 @@ $total_pages = ceil($total_inst / $limit); // Calcular el total de páginas
 ?>
 <?php 
 // Consulta para llenar las listas desplegables
-$sql_municipios = "SELECT cod_munic, nomb_munic FROM municipios";
+$sql_municipios = "SELECT d.nomb_depto, m.nomb_munic,m.cod_munic FROM municipios m Join departamentos d ON d.cod_depto = m.cod_depto";
 $stmt_municipios = $conn->query($sql_municipios);
 $municipios = $stmt_municipios->fetchAll(PDO::FETCH_ASSOC);
 
@@ -67,104 +67,84 @@ $instituciones= $stm_inst->fetchAll(PDO::FETCH_ASSOC);
 include 'inststyle.html';
     session_start();
     $form_display = false;// Manejo del botón "Atrás"
+
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['back'])) {
         unset($_SESSION['form_display']); // Limpia la variable que controla el estado del formulario
     header("Location: " . $_SERVER['PHP_SELF']); // Recarga la página
-    exit;
+    
     }   // Manejo del botón "Inicio"
     if (isset($_POST['reset'])) {
         // Elimina todas las variables de sesión y redirige al inicio
         session_unset();
         header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
+       
     } 
     if (isset($_POST['update'])) {
-        $_SESSION['cod_inst'] = $_POST['cod_inst_update'];
+        if (empty($_POST['cod_inst_update']) || empty($_POST['cod_munic']) || empty($_POST['cod_estado']) || empty($_POST['acreditada_update'])) {
+            echo "<script>alert('Por favor completa todos los campos obligatorios.');</script>";
+            exit;
+        }
+    //almacenar en session
+    $_SESSION['cod_inst'] = $_POST['cod_inst_update'];
     $_SESSION['cod_munic'] = $_POST['cod_munic'];
-    $_SESSION['cod_norma'] = $_POST['cod_norma'];
-    $_SESSION['cod_admin'] = $_POST['cod_admin'];
-    $_SESSION['cod_seccional'] = $_POST['cod_seccional'];
-    $_SESSION['cod_juridica'] = $_POST['cod_juridica'];
     $_SESSION['cod_estado'] = $_POST['cod_estado'];
+    $_SESSION['acreditada'] = $_POST['acreditada_update'];
+    
+        // Campos opcionales: Asignar NULL si están vacíos
+    $_SESSION['cod_norma'] = !empty($_POST['cod_norma']) ? $_POST['cod_norma'] : null;
+    $_SESSION['cod_admin'] = !empty($_POST['cod_admin']) ? $_POST['cod_admin'] : null;
+    $_SESSION['cod_seccional'] = !empty($_POST['cod_seccional']) ? $_POST['cod_seccional'] : null;
+    $_SESSION['cod_juridica'] = !empty($_POST['cod_juridica']) ? $_POST['cod_juridica'] : null;
 
     $_SESSION['form_display'] = true;   
 
-            }if (isset($_POST['update_inst'])) {
-        
-        $cod_munic= $_POST['cod_munic_update'];    
-        $direccion = $_POST['direccion_update'];
-        $telefono= $_POST['telefono_update'];
-        $norma= $_POST['norma_update'];
+         }if (isset($_POST['update_inst'])) {
+        // Capturar y validar campos obligatorios del segundo formulario
+        $direccion= $_POST['direccion_update'];
         $fecha_creacion = $_POST['fecha_creacion_update'];
-        $programas_vigente = $_POST['programas_vigente_update'];
-        $programas_convenio = $_POST['programas_convenio_update'];
-        $acreditada = $_POST['acreditada_update'];
-        $fecha_acreditacion = $_POST['fecha_acredtacion_update'];
-        $resolucion_acreditacion= $_POST['resolucion_acreditacion_update'];
-        $vigencia = $_POST['vigencia_update'];
-        $nit= $_POST['nit_update'];
-        $pagina_web= $_POST['pagina_web_update'];
-        // Validaciones de fechas  creacion,acreditacion y vigencia 
-        if (strtotime($fecha_acreditacion) < strtotime($fecha_creacion)) {
-            echo "<script>alert('La fecha de acreditación no puede ser menor que la de creación.');</script>";
-            exit;
-        }
-          // Verificar longitud del telefono
-    if (strlen($telefono) > 10 ) {
-        echo "<script>alert('El telefono debe tener máximo 10 digitos. Intenta de nuevo.');</script>";
-    } 
-    // Verificar si el municipio existe
+        $fecha_acreditacion = $_POST['fecha_acreditacion_update'];
+        $telefono= !empty($_POST['telefono_update']) ? $_POST['telefono_update'] : null;
+        $norma= !empty($_POST['norma_update']) ? $_POST['norma_update'] : null;
+        $programas_vigente = !empty($_POST['programas_vigente_update']) ? $_POST['programas_vigente_update'] : null;
+        $programas_convenio = !empty($_POST['programas_convenio_update']) ? $_POST['programas_convenio_update'] : null;
+        $resolucion_acreditacion=!empty($_POST['resolucion_acreditacion_update']) ? $_POST['resolucion_acreditacion_update'] : null;
+        $vigencia = !empty($_POST['vigencia_update']) ? $_POST['vigencia_update'] : null;
+        $nit= !empty($_POST['nit_update']) ? $_POST['nit_update'] : 'No disponible';
+        $pagina_web = !empty($_POST['pagina_web_update']) ? $_POST['pagina_web_update'] : 'No disponible';
 
-    $sql_check = "SELECT COUNT(*) FROM municipios WHERE cod_munic = ?";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->execute([$cod_munic]);
-    $exist = $stmt_check->fetchColumn();
-if ($exist = 0) {
-        echo "<script>alert('El municipio no existe. Intenta con un código diferente.');</script>";
-    }
 
-    if (!empty($_POST['cod_munic'])) {
-        $cod_munic = $_POST['cod_munic']; // Capturar el código enviado por POST
-    
-        // Validar formato del código (opcional, según tus requisitos)
-        if (!ctype_digit($cod_munic)) {
-            echo json_encode(['existe' => false, 'error' => 'El código debe ser numérico.']);
-            exit;
-        }
-    
-        // Consulta para verificar si el código existe
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM municipios WHERE cod_munic = :cod_munic");
-        $stmt->bindParam(':cod_munic', $cod_munic, PDO::PARAM_STR);
-        $stmt->execute();
-    
-        // Obtener si existe el municipio
-        $existe = $stmt->fetchColumn() > 0;
-    
-        // Devolver el resultado como JSON
-        echo json_encode(['existe' => $existe]);
-    } else {
-        // Si no se envía el código, devolver un error
-        echo json_encode(['existe' => false, 'error' => 'No se envió el código de municipio.']);
-    }
-    
 
-        // Si hay errores, devolver al formulario con los datos
-        if (count($errores) > 0) {
-            $_SESSION['errores'] = $errores;
-            $_SESSION['form_data'] = $_POST;  // Almacenar los datos en sesión para restaurarlos
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
-        }
 
             // Actualizar el directivo en la base de datos
-        $sql_update = "UPDATE inst_por_municipio SET COD_MUNIC=?, direccion= ?, telefono = ?, norma=?, 
-        fecha_creacion=?, programas_vigente=?, programas_convenio=?, acreditada=?, fecha_acreditacion=?,
+        $sql_update = "UPDATE inst_por_municipio SET cod_munic=?, cod_estado=?, acreditada=?, cod_norma=?, cod_admin=?, 
+        cod_seccional=?, cod_juridica=?, direccion= ?, telefono = ?, norma=?, 
+        fecha_creacion=?, programas_vigente=?, programas_convenio=?, fecha_acreditacion=?,
         resolucion_acreditacion=?, vigencia=?, nit=?, pagina_web=?  WHERE cod_inst = ?";
         $stmt_update = $conn->prepare($sql_update);
-        if ($stmt_update->execute([$cod_munic,$direccion, $telefono, $norma, $fecha_creacion, 
-        $programas_vigente, $programas_convenio, $acreditada, $fecha_acreditacion, $resolucion_acreditacion,
-        $vigencia, $nit, $pagina_web,$_SESSION['cod_inst']])) {
+        $params = [
+            $_SESSION['cod_munic'],
+            $_SESSION['cod_estado'],
+            $_SESSION['acreditada'],
+            $_SESSION['cod_norma'],
+            $_SESSION['cod_admin'],
+            $_SESSION['cod_seccional'],
+            $_SESSION['cod_juridica'],
+            $direccion,
+            $telefono,
+            $norma,
+            $fecha_creacion,
+            $programas_vigente,
+            $programas_convenio,
+            $fecha_acreditacion,
+            $resolucion_acreditacion,
+            $vigencia,
+            $nit,
+            $pagina_web,
+            $_SESSION['cod_inst']
+        ];
+        if ($stmt_update->execute($params)) {
             echo "<script>
                     alert('institucion actualizado con éxito.');
                     window.location.href = window.location.href; // Recarga la página
@@ -256,7 +236,7 @@ if ($exist = 0) {
         <?php endif; ?>
 
         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-            <a href="?page=<?php echo $i; ?>" <?php echo ($i == $page) ? :''; ?>><?php echo $i; ?></a>
+            <a href="?page=<?php echo $i; ?>" <?php echo ($i == $page) ? 'style="background-color: #2994f9;"':''; ?>><?php echo $i; ?></a>
         <?php endfor; ?>
 
         <?php if ($page < $total_pages): ?>
@@ -267,7 +247,7 @@ if ($exist = 0) {
 <!-- Contenedor para el formulario -->
 <div class="container">
     <h2>Actualizar Institución</h2>
-    <form method="POST" action="">
+    <form method="POST" id="formulario" action="">
     <?php if (!isset($_SESSION['form_display'])): ?>
         <label>Código de la Institución:</label>
     <select name="cod_inst_update" class='form-select' required>
@@ -285,58 +265,58 @@ if ($exist = 0) {
         <option value="">-- Selecciona un municipio --</option>
         <?php foreach ($municipios as $munic): ?>
             <option value="<?= htmlspecialchars($munic['cod_munic']) ?>">
-                <?= htmlspecialchars($munic['nomb_munic']) ?>
-            </option>
-        <?php endforeach; ?>
+                <?= htmlspecialchars($munic['nomb_depto']. " - " . $munic['nomb_munic']. " - " .$munic['cod_munic']) ?>
+            </option> 
+        <?php endforeach; ?> 
     </select>
     <br>
 
-    <label> Nueva Norma:</label>
-    <select name="cod_norma" class="form-select" required>
+    <label>Norma:</label>
+    <select name="cod_norma" class="form-select">
         <option value="">-- Selecciona una norma --</option>
         <?php foreach ($normas as $norma): ?>
             <option value="<?= htmlspecialchars($norma['cod_norma']) ?>">
-                <?= htmlspecialchars($norma['nomb_norma']) ?>
+                <?= htmlspecialchars($norma['cod_norma']." - " .$norma['nomb_norma']) ?>
             </option>
         <?php endforeach; ?>
     </select>
     <br>
 
-    <label>Nuevo Acto Administrativo:</label>
-    <select name="cod_admin" class="form-select" required>
+    <label>Acto Administrativo:</label>
+    <select name="cod_admin" class="form-select">
         <option value="">-- Selecciona un acto administrativo --</option>
         <?php foreach ($administrativos as $admin): ?>
             <option value="<?= htmlspecialchars($admin['cod_admin']) ?>">
-                <?= htmlspecialchars($admin['nomb_admin']) ?>
+                <?= htmlspecialchars($admin['cod_admin']." - " . $admin['nomb_admin']) ?>
             </option>
         <?php endforeach; ?>
     </select>
     <br>
 
-    <label>Nueva Seccional:</label>
-    <select name="cod_seccional" class="form-select" required>
+    <label>Seccional:</label>
+    <select name="cod_seccional" class="form-select" >
         <option value="">-- Selecciona una seccional --</option>
         <?php foreach ($seccionales as $secc): ?>
             <option value="<?= htmlspecialchars($secc['cod_seccional']) ?>">
-                <?= htmlspecialchars($secc['nomb_seccional']) ?>
+                <?= htmlspecialchars($secc['cod_seccional']. " - " .$secc['nomb_seccional']) ?>
             </option>
         <?php endforeach; ?>
     </select>
     <br>
 
-    <label>Nueva Naturaleza Jurídica:</label>
-    <select name="cod_juridica" class="form-select"required>
+    <label>Naturaleza Jurídica:</label>
+    <select name="cod_juridica" class="form-select">
         <option value="">-- Selecciona una naturaleza jurídica --</option>
         <?php foreach ($juridicas as $juridica): ?>
             <option value="<?= htmlspecialchars($juridica['cod_juridica']) ?>">
-                <?= htmlspecialchars($juridica['nomb_juridica']) ?>
+                <?= htmlspecialchars($juridica['cod_juridica']. " - ". $juridica['nomb_juridica']) ?>
             </option>
         <?php endforeach; ?>
     </select>
     <br>
 
-    <label>Nuevo Estado:</label>
-    <select name="cod_estado" class="form-select" required>
+    <label>Estado:</label>
+    <select name="cod_estado" class="form-select" required >
         <option value="">-- Selecciona un estado --</option>
         <?php foreach ($estados as $estado): ?>
             <option value="<?= htmlspecialchars($estado['cod_estado']) ?>">
@@ -345,6 +325,12 @@ if ($exist = 0) {
         <?php endforeach; ?>
     </select>
     <br>
+    <label for="acreditada_update">¿Acreditada?:</label>
+            <select name="acreditada_update" required>
+            <option value="Sí" <?= (isset($_SESSION['form_data']['acreditada_update']) && $_SESSION['form_data']['acreditada_update'] == 'Sí') ? 'selected' : ($_SESSION['acreditada'] == 'Sí' ? 'selected' : '') ?>>Sí</option>
+            <option value="No" <?= (isset($_SESSION['form_data']['acreditada_update']) && $_SESSION['form_data']['acreditada_update'] == 'No') ? 'selected' : ($_SESSION['acreditada'] == 'No' ? 'selected' : '') ?>>No</option>
+        </select>
+        <br>
             
         <button type="submit" name="update">Siguiente</button>
 
@@ -355,21 +341,19 @@ if ($exist = 0) {
             <br>
 
                 <label for="cod_munic_update">Nuevo Código de Municipio:</label>
-                <input type="text" id= "cod_munic_update" name="cod_munic_update" value="<?= isset($_SESSION['form_data']['cod_munic_update']) ? $_SESSION['form_data']['cod_munic_update'] : $_SESSION['cod_munic'] ?>" required>
+                <input type="text" id= "cod_munic_update" name="cod_munic_update" value="<?php echo $_SESSION['cod_munic']; ?>" readonly>
                 <br>
-            <label for="direccion_update">Nueva Dirección:</label>
-        <input type="text" name="direccion_update" placeholder="Ej: Carrera 45 #26-85" value="<?= isset($_SESSION['form_data']['direccion_update']) ? $_SESSION['form_data']['direccion_update'] : $_SESSION['direccion'] ?>" required>
-        <span class="error-message" id="direccionError">La dirección debe tener al menos 5 caracteres.</span>
-            <br>
+                <label for="direccion_update">Nueva Dirección:</label>
+        <input type="text" name="direccion_update" id="direccion_update" placeholder="Ej: Carrera 45 #26-85" value="<?= isset($_SESSION['form_data']['direccion_update']) ? $_SESSION['form_data']['direccion_update'] : $_SESSION['direccion'] ?>" required>
+        <p id="mensaje" style="color: red;"></p>  
+        <br>
 
         <label for="telefono_update">Nuevo Teléfono:</label>
-        <input type="text" id= "telefono_update" name="telefono_update"  placeholder="Ej: 3165000" value="<?= isset($_SESSION['form_data']['telefono_update']) ? $_SESSION['form_data']['telefono_update'] : $_SESSION['telefono'] ?>" required>
-        <p class="error-message" id="errorTelefono">debe ser una cadena de solo números y positivos.</p>
-        <p class="error-message" id="errorEspacioTelefono" style="display: none; color: red;">No se permiten espacios.</p>
-        <p id="successTelefono" style="display: none; color: green;">¡Valor válido!</p>
+        <input type="text" id= "telefono_update" name="telefono_update" id="telefono_update"  placeholder="Ej: 3165000" value="<?= isset($_SESSION['form_data']['telefono_update']) ? $_SESSION['form_data']['telefono_update'] : $_SESSION['telefono'] ?>" >
+        <p class="error-message" id="telefonoError">Solo se aceptan telefonos fijos de 7 digitos y celulares de 10 digitos y su número inicial es 3.</p>
         <br>    
             <label for="norma_update">Norma:</label>
-            <input type="text" min = "0" id="norma_update" name="norma_update" value="<?= isset($_SESSION['form_data']['norma_update']) ? $_SESSION['form_data']['norma_update'] : $_SESSION['norma'] ?>" required>
+            <input type="text" min = "0" id="norma_update" name="norma_update" value="<?= isset($_SESSION['form_data']['norma_update']) ? $_SESSION['form_data']['norma_update'] : $_SESSION['norma'] ?>">
             <br>
             <p class="error-message" id="errornorma">debe ser una cadena de solo números y positivos.</p>
             <p class="error-message" id="errorEspacio" style="display: none; color: red;">No se permiten espacios.</p>
@@ -378,40 +362,39 @@ if ($exist = 0) {
         <input type="date" name="fecha_creacion_update" id= "fecha_creacion_update"value="<?= isset($_SESSION['form_data']['fecha_creacion_update']) ? $_SESSION['form_data']['fecha_creacion_update'] : $_SESSION['fecha_creacion'] ?>" required>
         <br>
         <label for="programas_vigente_update">Nueva cantidad de Programas Vigentes:</label>
-        <input type="text" min="0" id="programas_vigente_update" name="programas_vigente_update" value="<?= isset($_SESSION['form_data']['programas_vigente_update']) ? $_SESSION['form_data']['programas_vigente_update'] : $_SESSION['programas_vigente'] ?>" required>
+        <input type="text" min="0" id="programas_vigente_update" name="programas_vigente_update" value="<?= isset($_SESSION['form_data']['programas_vigente_update']) ? $_SESSION['form_data']['programas_vigente_update'] : $_SESSION['programas_vigente'] ?>" >
         <br>
         <p class="error-message" id="errorvigentes">debe ser un número y positivo,no se permiten letras ni caracteres.</p>
         <p class="error-message" id="errorEspacio2" style="display: none; color: red;">No se permiten espacios.</p>
         <p id="successProgramas" style="display: none; color: green;">¡Valor válido!</p> 
 
         <label for="programas_convenio_update">Nueva Cantidad de Programas En Convenio:</label>
-        <input type="text" min="0" id = "programas_convenio_update" name="programas_convenio_update" value="<?= isset($_SESSION['form_data']['programas_convenio_update']) ? $_SESSION['form_data']['programas_convenio_update'] : $_SESSION['programas_convenio'] ?>" required>
+        <input type="text" min="0" id = "programas_convenio_update" name="programas_convenio_update" value="<?= isset($_SESSION['form_data']['programas_convenio_update']) ? $_SESSION['form_data']['programas_convenio_update'] : $_SESSION['programas_convenio'] ?>" >
         <br>
         <p class="error-message" id="errorConvenio">debe ser un número y positivo,no se permiten letras ni caracteres.</p>
         <p class="error-message" id="errorEspacioConvenio" style="display: none; color: red;">No se permiten espacios.</p>
         <p id="successConvenio" style="display: none; color: green;">¡Valor válido!</p> 
-
-            <label for="acreditada_update">¿Acreditada?:</label>
-            <select name="acreditada_update" required>
-            <option value="Sí" <?= (isset($_SESSION['form_data']['acreditada_update']) && $_SESSION['form_data']['acreditada_update'] == 'Sí') ? 'selected' : ($_SESSION['acreditada'] == 'Sí' ? 'selected' : '') ?>>Sí</option>
-            <option value="No" <?= (isset($_SESSION['form_data']['acreditada_update']) && $_SESSION['form_data']['acreditada_update'] == 'No') ? 'selected' : ($_SESSION['acreditada'] == 'No' ? 'selected' : '') ?>>No</option>
-        </select>
             <br>
 
-            <label for="fecha_acreditacion_update">Nueva Fecha de Acreditación:</label>
-        <input type="date" name="fecha_acreditacion_update" id="fecha_acreditacion_update" value="<?= isset($_SESSION['form_data']['fecha_acreditacion_update']) ? $_SESSION['form_data']['fecha_acreditacion_update'] : $_SESSION['fecha_acreditacion'] ?>" <?= $_SESSION['acreditada'] == 'No' ? 'disabled' : '' ?>>
-        <span class="error-message" id="fechaError">La fecha de acreditación no puede ser anterior a la fecha de creación.</span>
-        <br>
+            <?php if ($_SESSION['acreditada'] == 'Sí'): ?>
+    <label for="fecha_acreditacion_update">Nueva Fecha de Acreditación:</label>
+    <input type="date" name="fecha_acreditacion_update" id="fecha_acreditacion_update" 
+           value="<?= isset($_SESSION['form_data']['fecha_acreditacion_update']) 
+               ? $_SESSION['form_data']['fecha_acreditacion_update'] 
+               : $_SESSION['fecha_acreditacion'] ?>">
+    <p id="mensaje_fecha" style="color: red;"></p>
+    <br>
+<?php endif; ?>
 
         <label for="resolucion_acreditacion_update">Nueva Resolución de Acreditación:</label>
-        <input type="text" min = "0" id= resolucion_acreditacion_update name="resolucion_acreditacion_update" value="<?= isset($_SESSION['form_data']['resolucion_acreditacion_update']) ? $_SESSION['form_data']['resolucion_acreditacion_update'] : $_SESSION['resolucion_acreditacion'] ?>" required>
+        <input type="text" min = "0" id= resolucion_acreditacion_update name="resolucion_acreditacion_update" value="<?= isset($_SESSION['form_data']['resolucion_acreditacion_update']) ? $_SESSION['form_data']['resolucion_acreditacion_update'] : $_SESSION['resolucion_acreditacion'] ?>" >
         <br>
         <p class="error-message" id="errorAcreditacion">debe ser un número y positivo,no se permiten letras ni caracteres.</p>
         <p class="error-message" id="errorEspacioAcreditacion" style="display: none; color: red;">No se permiten espacios.</p>
         <p id="successAcreditacion" style="display: none; color: green;">¡Valor válido!</p> 
 
         <label for="vigencia_update">Nueva Vigencia:</label>
-        <input type="text" min="0" id="vigencia_update" name="vigencia_update" value="<?= isset($_SESSION['form_data']['vigencia_update']) ? $_SESSION['form_data']['vigencia_update'] : $_SESSION['vigencia'] ?>" required>
+        <input type="text" min="0" id="vigencia_update" name="vigencia_update" value="<?= isset($_SESSION['form_data']['vigencia_update']) ? $_SESSION['form_data']['vigencia_update'] : $_SESSION['vigencia'] ?>" >
         <br>
         <p class="error-message" id="errorVigencia">debe ser un número y positivo,no se permiten letras ni caracteres.</p>
         <p class="error-message" id="errorEspacioVigencia" style="display: none; color: red;">No se permiten espacios.</p>
@@ -419,17 +402,17 @@ if ($exist = 0) {
 
         
         <label for="nit_update">Nuevo NIT:</label>
-        <input type="text" name="nit_update" placeholder="Ej: 899.999.063-3" value="<?= isset($_SESSION['form_data']['nit_update']) ? $_SESSION['form_data']['nit_update'] : $_SESSION['nit'] ?>" required>
+        <input type="text" name="nit_update" placeholder="Ej: 899.999.063-3" value="<?= isset($_SESSION['form_data']['nit_update']) ? $_SESSION['form_data']['nit_update'] : $_SESSION['nit'] ?>">
         <span class="error-message" id="nitError">El NIT debe tener el formato correcto (ej: 899.999.063-3).</span>
         <br>
 
         <label for="pagina_web_update">Nueva Página Web:</label>
-        <input type="url" name="pagina_web_update" placeholder="Ej: https://www.unal.edu.co" value="<?= isset($_SESSION['form_data']['pagina_web_update']) ? $_SESSION['form_data']['pagina_web_update'] : $_SESSION['pagina_web'] ?>" required>
+        <input type="url" name="pagina_web_update" placeholder="Ej: https://www.unal.edu.co" value="<?= isset($_SESSION['form_data']['pagina_web_update']) ? $_SESSION['form_data']['pagina_web_update'] : $_SESSION['pagina_web'] ?>" >
         <span class="error-message" id="paginaWebError">La página web debe tener un formato válido.</span>  
         <br>
             <!-- Botón Atrás -->
             <form method="POST" action="">        
-    <button type="submit" name="back">Atrás</button>
+    <button name="back">Atrás</button>
     </form>
     <form method="POST" action="">
     <button type="submit" name="reset">limpiar</button>
@@ -437,7 +420,7 @@ if ($exist = 0) {
 
 
             <button type="submit" name="update_inst">Actualizar Institución</button>
-<!---------------------validaciones---------------------------------------------->
+<!------------------------------------Validaciones ---------------------------------------------->
            <script>
 
     //--------------------------validacion NORMA
@@ -753,67 +736,127 @@ programasInput.addEventListener('input', validateProgramaInput);
     });
 </script>
 <script>
-    //-----------------------VALIDAR TELEFONO ---------------------------------
-    // Obtener referencias al input y a los mensajes
-    const telefonoInput = document.getElementById('telefono_update');
-    const errorMessageTelefono = document.getElementById('errorTelefono');
-    const spaceErrorMessageTelefono = document.getElementById('errorEspacioTelefono');
-    const successMessageTelefono = document.getElementById('successTelefono');
+ //-----------------------VALIDAR TELEFONO ---------------------------------
+ const telefono = document.getElementById('telefono_update');
+    const telefonoError = document.getElementById('telefonoError');
 
-    // Evitar la tecla de espacio
-    telefonoInput.addEventListener('keydown', function (event) {
-        if (event.code === 'Space') {
-            event.preventDefault(); // Bloquear la tecla de espacio
-            spaceErrorMessageTelefono.style.display = 'block'; // Mostrar mensaje de error por espacio
-            errorMessageTelefono.style.display = 'none'; // Esconder el mensaje de número inválido
-            successMessageTelefono.style.display = 'none'; // Esconder el mensaje de éxito
-
-            // Esconder el mensaje de espacio después de 3 segundos
-            setTimeout(() => {
-                spaceErrorMessageTelefono.style.display = 'none'; 
-                validarTelefonoInput();
-            }, 2000); // 2000 ms = 2 segundos
-        }
+    telefono.addEventListener('input', () => {
+        // Solo acepta números de 7 dígitos o 10 dígitos que inicien con 3
+        const esValido = /^\d{7}$/.test(telefono.value) || /^3\d{9}$/.test(telefono.value);
+        telefonoError.style.display = esValido ? 'none' : 'block';
+        telefono.classList.toggle('input-error-message', !esValido);
     });
 
-    // Validar el campo en tiempo real
-    telefonoInput.addEventListener('input', validarTelefonoInput);
-    function validarTelefonoInput() {
+</script>
 
-        const telefonovalue = telefonoInput.value.trim(); // Eliminar espacios al inicio y final
-        
-          // Verificar si el campo está vacío
-        if (telefonovalue === '') {
-            // Si el campo está vacío, ocultar todos los mensajes
-            errorMessageTelefono.style.display = 'none';
-            successMessageTelefono.style.display = 'none';
-            spaceErrorMessageTelofono.style.display = 'none';
-        } 
-        // Verificar si el valor contiene letras o caracteres no válidos
-        else if (!/^\d+$/.test(telefonovalue)) {
-            errorMessageTelefono.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
-            successMessageTelefono.style.display = 'none'; // Esconder el mensaje de éxito
-            spaceErrorMessageTelefono.style.display = 'none'; // Esconder mensaje de espacio
-        } 
-        // Si el valor es válido (solo números)
-        else {
-            // Mostrar mensaje de éxito si es válido
-            errorMessageTelefono.style.display = 'none';
-            successMessageTelefono.style.display = 'block';
-            spaceErrorMessageTelefono.style.display = 'none'; // Esconder mensaje de espacio
+<script>
+    // Función JavaScript para validar la dirección en tiempo real
+    function validarDireccion() {
+        const direccion = document.getElementById("direccion_update").value;
+        const mensaje = document.getElementById("mensaje");
+        // Expresión regular para validar las direcciones con "barrio" sin necesidad de "#" o "No"
+        const patron = /\b(?:Calle|Carrera|Av|carretera|Avenida|Diagonal|sede|Vía|Via)\b.*(?:#|No\.?|Km)?|\bBarrio\b/i;
+
+        // Validar longitud
+        if (direccion.length > 100) {
+            mensaje.textContent = "La dirección no debe exceder los 100 caracteres.";
+            mensaje.style.color = "red";
+            return false;
+        } else if (!patron.test(direccion)) {
+            mensaje.textContent = "La dirección debe contener términos válidos como Calle, Carrera, Av, Barrio, etc.";
+            mensaje.style.color = "red";
+            return false;
+        } else {
+            mensaje.textContent = "Dirección válida.";
+            mensaje.style.color = "green";
+            return true;
         }
     }
 
-    // Prevenir el envío del formulario si hay un error
-    document.getElementById('telefonoForm').addEventListener('submit', function (e) {
-        const telefonovalue = TelefonoInput.value.trim();
+    // Validación en tiempo real mientras el usuario escribe
+    function validarEnTiempoReal() {
+        const direccionInput = document.getElementById("direccion_update");
+        direccionInput.addEventListener("input", validarDireccion);
+    }
 
-        // Verificar si el valor está vacío o no es un número positivo
-        if (telefonovalue < 0 || !/^\d+$/.test(telefonovalue)) {
-            e.preventDefault(); // Prevenir envío
-            alert("Por favor, corrige los errores antes de enviar.");
+    // Configurar la fecha actual al cargar la página
+    function establecerFechaActual() {
+        const fechaHoy = new Date();
+        const dia = String(fechaHoy.getDate()).padStart(2, '0');
+        const mes = String(fechaHoy.getMonth() + 1).padStart(2, '0');
+        const anio = fechaHoy.getFullYear();
+        const fechaFormateada = `${anio}-${mes}-${dia}`;
+        document.getElementById("fecha_creacion_update").max = fechaFormateada;
+        document.getElementById("fecha_acreditacion_update").max = fechaFormateada; // Configura la fecha máxima para la fecha de acreditación
+    }
+
+    // Validar fechas
+    function validarFechas() {
+        const fechaCreacion = document.getElementById("fecha_creacion_update").value;
+        const fechaAcreditacion = document.getElementById("fecha_acreditacion_update").value;
+        const fechaCreacionObj = new Date(fechaCreacion);
+        const fechaAcreditacionObj = new Date(fechaAcreditacion);
+        const fechaHoy = new Date();
+        const mensajeFecha = document.getElementById("mensaje_fecha");
+
+        // Validación: la fecha de creación no puede ser mayor que la fecha actual
+        if (fechaCreacion && fechaCreacionObj > fechaHoy) {
+            mensajeFecha.textContent = "La fecha de creación no puede ser mayor a la fecha actual.";
+            document.getElementById("submit").disabled = true;
+            return false; // Evitar el envío
         }
-    });
+
+        // Validación: la fecha de acreditación no puede ser menor que la fecha de creación
+        if (fechaCreacion && fechaAcreditacion && fechaAcreditacionObj < fechaCreacionObj) {
+            mensajeFecha.textContent = "La fecha de acreditación no puede ser anterior a la fecha de creación.";
+            document.getElementById("submit").disabled = true;
+            return false; // Evitar el envío
+        }
+
+        // Validación: la fecha de acreditación no puede ser mayor que la fecha actual
+        if (fechaAcreditacion && fechaAcreditacionObj > fechaHoy) {
+            mensajeFecha.textContent = "La fecha de acreditación no puede ser mayor a la fecha actual.";
+            document.getElementById("submit").disabled = true;
+            return false; // Evitar el envío
+        }
+
+        // Limpiar mensajes si todo es válido
+        mensajeFecha.textContent = "";
+        document.getElementById("submit").disabled = false;
+        return true;
+    }
+
+    // Agregar eventos en tiempo real
+    function agregarEventos() {
+        const formulario = document.getElementById("formulario");
+        const fechaCreacionInput = document.getElementById("fecha_creacion_update");
+        const fechaAcreditacionInput = document.getElementById("fecha_acreditacion_update");
+
+        // Agregar eventos de 'input' para validación en tiempo real
+        fechaCreacionInput.addEventListener("input", validarFechas);
+        fechaAcreditacionInput.addEventListener("input", validarFechas);
+
+        // Agregar evento para validar al enviar el formulario
+        formulario.addEventListener("submit", manejarEnvio);
+    }
+
+    // Validación al enviar el formulario
+    function manejarEnvio(event) {
+        const esDireccionValida = validarDireccion();
+        const sonFechasValidas = validarFechas();
+        if (!esDireccionValida || !sonFechasValidas) {
+            alert("Por favor, corrija los errores antes de enviar.");
+            event.preventDefault(); // Evita el envío del formulario
+        }
+    }
+
+    // Inicializar
+    window.onload = function () {
+        validarEnTiempoReal();
+        establecerFechaActual();
+        agregarEventos();
+        manejarEnvio();
+    };
 </script>
 
         <?php endif; ?>
