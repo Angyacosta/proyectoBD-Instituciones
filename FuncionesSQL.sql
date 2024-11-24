@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION filtros(nombre_estado varchar,nombre_sede varchar, nombre_sector varchar, nombre_caracter varchar, nombre_acto varchar, nombre_norma varchar, nombre_depar varchar)
+
+CREATE OR REPLACE FUNCTION filtros(nombre_estado varchar,nombre_sede varchar, nombre_sector varchar, nombre_caracter varchar, nombre_acto varchar, nombre_norma varchar, nombre_depar varchar, nombre_institucion text, codigo_institucion integer)
 RETURNS TABLE (nomb_inst text, cod_inst integer, cod_ies_padre integer, nomb_sector varchar, nomb_academ varchar, nomb_depto varchar, nomb_munic varchar, nomb_estado varchar, programas_vigente integer, programas_convenio integer, acreditada boolean) AS $$
 BEGIN
     RETURN QUERY
@@ -22,7 +23,9 @@ BEGIN
     (nombre_caracter IS NULL OR ca.nomb_academ = nombre_caracter) AND
     (nombre_acto IS NULL OR act.nomb_admin = nombre_acto) AND
     (nombre_norma IS NULL OR nc.nomb_norma = nombre_norma) AND
-    (nombre_depar IS NULL OR d.nomb_depto = nombre_depar);
+    (nombre_depar IS NULL OR d.nomb_depto = nombre_depar) AND
+    (nombre_institucion IS NULL OR i.nomb_inst = nombre_institucion) AND
+    (codigo_institucion IS NULL OR ipm.cod_inst = codigo_institucion);
 END;
 $$ LANGUAGE plpgsql;
 
