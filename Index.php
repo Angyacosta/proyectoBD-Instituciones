@@ -1,5 +1,7 @@
 <?php   
 include 'conexionDB.php';  
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 try {   
     $query = "  
         SELECT   
@@ -34,23 +36,16 @@ try {
     $stmt->execute();  
     $instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);  
 
-    // Obtener lista de departamentos para el select
-    $departamentosQuery = "SELECT nomb_depto FROM public.departamentos";
-    $stmtDepto = $conn->prepare($departamentosQuery);  
-    $stmtDepto->execute();  
-    $departamentos = $stmtDepto->fetchAll(PDO::FETCH_ASSOC);  
-
-    // Obtener lista de los actos administrativos
-    $actos_administrativosQuery = "SELECT nomb_admin FROM public.acto_administrativo";
-    $stmtActo = $conn->prepare($actos_administrativosQuery);  
-    $stmtActo->execute();  
-    $actos_administrativos = $stmtActo->fetchAll(PDO::FETCH_ASSOC); 
-
-    //Obtener lista de la norma de creacion
-    $normas_creacionesQuery = "SELECT nomb_norma FROM public.norma_creacion";
-    $stmtNorma= $conn->prepare($normas_creacionesQuery);  
-    $stmtNorma->execute();  
-    $normas_creaciones = $stmtNorma->fetchAll(PDO::FETCH_ASSOC);
+    //funcion generica para extraer las consultas
+    function funcion($conn, $query) {
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    $departamentos = funcion($conn, "SELECT nomb_depto FROM public.departamentos");
+    $actos_administrativos = funcion($conn, "SELECT nomb_admin FROM public.acto_administrativo");
+    $normas_creaciones = funcion($conn, "SELECT nomb_norma FROM public.norma_creacion");
 
     // Pasar los valores de los filtros como parámetros a la función filtros
     $nombre_estado = $_POST['nombre_estado'] !== "Todos" ? $_POST['nombre_estado'] : null;
@@ -82,12 +77,18 @@ try {
 
     // Obtener los resultados
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     
 } catch (PDOException $e) {  
     echo "Error: " . $e->getMessage();  
     exit;  
 } 
 ?>  
+<style>  
+    select.form-control {  
+       position: relative; /* Asegura el contexto de posicionamiento */  
+    }  
+</style> 
 
 <!DOCTYPE html>  
 <html lang="es">  
@@ -98,12 +99,6 @@ try {
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>  
 <body>  
-
-                <style>  
-                    select.form-control {  
-                        position: relative; /* Asegura el contexto de posicionamiento */  
-                    }  
-                </style>  
 
 <!-- aqui cambia segun los nombres de sus archivos-->
 <div class="header" style="margin-bottom: 20px; padding: 10px;">
@@ -132,35 +127,43 @@ try {
                         <input type="text" class="form-control" name="codigo_institucion">
                     </div>
                     <button type="submit" class="btn btn-primary">Buscar</button>
-                    <button type="reset" class="btn btn-warning">Limpiar</button>
+                    <button type="reset" class="btn btn-secondary">Limpiar</button> 
                 </form>
             </div>
 
             <!-- Filtros Generales -->
             <h1 class="mt-3">Filtros Generales</h1>
             <form method="POST" action="">  
-            
-            <div class="form-group">
-                <label>Seleccione un Departamento:</label>
-                <select class="form-control" name="nombre_depar">
-                    <option value="Todos" <?= isset($nombre_depar) && $nombre_depar === 'Todos' ? 'selected' : '' ?>>Todos</option>
-                        <?php 
-                            foreach ($departamentos as $departamento): 
-                        ?>  
-                    <option value="<?= htmlspecialchars($departamento['nomb_depto']) ?>" <?= isset($nombre_depar) && $nombre_depar === $departamento['nomb_depto'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($departamento['nomb_depto']) ?>
-                    </option>  
-                        <?php endforeach; ?>
-                </select>
-            </div>
-
-
                 <div class="form-group">  
                     <label>Estado de la Institución:</label><br>  
                     <input type="radio" name="nombre_estado" value="Todos" <?= $nombre_estado === 'Todos' ? 'checked' : '' ?> checked> Todos<br>
                     <input type="radio" name="nombre_estado" value="Activa" <?= $nombre_estado === 'Activa' ? 'checked' : '' ?>> Activo  <br>
                     <input type="radio" name="nombre_estado" value="Inactiva" <?= $nombre_estado === 'Inactiva' ? 'checked' : '' ?>> Inactivo  <br>
                 </div>  
+                <div class="form-group">
+                    <label>Nombre norma:</label><br>
+                    <input type="radio" name="nombre_norma" value="Todos" <?= $nombre_norma=== 'Todos' ? 'checked' : '' ?> checked> Todos<br>
+                    <?php foreach ($normas_creaciones as $norma_creacion): ?>
+                        <div>
+                            <input type="radio" name="nombre_norma" value="<?= htmlspecialchars($norma_creacion['nomb_norma']) ?>" 
+                                <?= isset($nombre_norma) && $nombre_norma === $norma_creacion['nomb_norma'] ? 'checked' : '' ?>>
+                            <?= htmlspecialchars($norma_creacion['nomb_norma']) ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="form-group">
+                    <label>Seleccione un Departamento:</label>
+                    <select class="form-control" name="nombre_depar">
+                        <option value="Todos" <?= isset($nombre_depar) && $nombre_depar === 'Todos' ? 'selected' : '' ?>>Todos</option>
+                            <?php 
+                                foreach ($departamentos as $departamento): 
+                            ?>  
+                        <option value="<?= htmlspecialchars($departamento['nomb_depto']) ?>" <?= isset($nombre_depar) && $nombre_depar === $departamento['nomb_depto'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($departamento['nomb_depto']) ?>
+                        </option>  
+                            <?php endforeach; ?>
+                    </select>
+                </div>
                 <div class="form-group">  
                     <label>Tipo de sede:</label><br>  
                     <select class="form-control" name="nombre_sede">  
@@ -201,22 +204,8 @@ try {
                         <?php endforeach; ?>
                     </select>  
                 </div> 
-                <div class="form-group">  
-                    <label>Nombre norma:</label><br>  
-                    <select class="form-control" name="nombre_norma">
-                        <option value="Todos" <?= isset($nombre_norma) && $nombre_norma === 'Todos' ? 'selected' : '' ?>>Todos</option>
-                        <?php 
-                            foreach ($normas_creaciones as $norma_creacion): 
-                        ?>  
-                        <option value="<?= htmlspecialchars($norma_creacion['nomb_norma']) ?>" <?= isset($nombre_norma) && $nombre_norma === $norma_creacion['nomb_norma'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($norma_creacion['nomb_norma']) ?>
-                        </option>  
-                        <?php endforeach; ?>
-                    </select>  
-                </div> 
-
                 <button type="submit" class="btn btn-primary">Buscar</button>  
-                <button type="reset" class="btn btn-warning">Limpiar</button>  
+                <button type="reset" class="btn btn-secondary">Limpiar</button>  
             </form>
         </div>
 
@@ -243,7 +232,6 @@ try {
                         <?php if (!empty($resultados)): ?>
                             <?php foreach ($resultados as $institucion): ?>
                                 <tr>
-
                                     <td><?= htmlspecialchars($institucion['nomb_inst']) ?></td>
                                     <td><?= htmlspecialchars($institucion['cod_inst']) ?></td>
                                     <td><?= htmlspecialchars($institucion['cod_ies_padre']) ?></td>
