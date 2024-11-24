@@ -10,7 +10,11 @@ h1{
     color: #333;
         text-align: center;
         margin-top: 20px;
-}
+}    .table-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #0288d1;
+    }
 /* Contenedor principal para centrar el formulario y la tabla */
 .container-wrapper {
 
@@ -22,7 +26,7 @@ h1{
 
 /* Formulario más pequeño a la derecha */
 .container {
-    width: 60%; /* Ancho reducido para el formulario */
+    width: 80%; /* Ancho reducido para el formulario */
     padding: 20px;
     background-color: #ffffff;
     border-radius: 8px;
@@ -82,6 +86,7 @@ table {
     border: 3;
     margin-left: auto; /* Centrado horizontal */
     margin-right: auto; /* Centrado horizontal */
+    text-align: center;
 }
 
 /* Aseguramos que la tabla y sus celdas tengan el mismo diseño */
@@ -98,8 +103,12 @@ th {
     color: white;
 }/* Estilos para la paginación */
 .pagination {
-    text-align: center;
-    margin-top: 20px;
+    width: 80%; /* Asegúrate de que sea igual al ancho de la tabla */
+    margin: 20px auto; /* Centrar horizontalmente */
+    text-align: center; /* Centrar el contenido */
+    display: flex;
+    justify-content: center; /* Alinea los elementos al centro */
+    gap: 5px; /* Espaciado entre los botones */
 }
 .pagination a{
     padding: 8px 16 px;
@@ -162,6 +171,35 @@ tr:hover {
     border-radius: 5px;
     background-color: #fff;
     margin-bottom: 10px; /* Espaciado entre campos */
-}
+}.menu-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .menu-links a {
+        text-decoration: none;
+        padding: 10px 15px;
+        background-color: #1985c4;
+        color: white;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .menu-links a:hover {
+        background-color: #4b9bd9;
+    }
+    .form-section {
+        width: 30%; /* Cada formulario ocupa un tercio del espacio */
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-section h2 {
+        font-size: 18px;
+        color: #333;
+        text-align: center;
+    }
 
 </style>
