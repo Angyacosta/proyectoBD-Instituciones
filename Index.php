@@ -1,7 +1,6 @@
 <?php   
 include 'conexionDB.php';  
 try {   
-    // Consulta principal
     $query = "  
         SELECT   
             i.nomb_inst,   
@@ -35,7 +34,6 @@ try {
     $stmt->execute();  
     $instituciones = $stmt->fetchAll(PDO::FETCH_ASSOC);  
 
-
     // Obtener lista de departamentos para el select
     $departamentosQuery = "SELECT nomb_depto FROM public.departamentos";
     $stmtDepto = $conn->prepare($departamentosQuery);  
@@ -54,11 +52,7 @@ try {
     $stmtNorma->execute();  
     $normas_creaciones = $stmtNorma->fetchAll(PDO::FETCH_ASSOC);
 
-
-
-
     // Pasar los valores de los filtros como parámetros a la función filtros
-
     $nombre_estado = $_POST['nombre_estado'] !== "Todos" ? $_POST['nombre_estado'] : null;
     $nombre_sede = $_POST['nombre_sede'] !== "Todos" ? $_POST['nombre_sede'] : null;
     $nombre_sector = $_POST['nombre_sector'] !== "Todos" ? $_POST['nombre_sector'] : null;
@@ -93,7 +87,6 @@ try {
     echo "Error: " . $e->getMessage();  
     exit;  
 } 
-
 ?>  
 
 <!DOCTYPE html>  
@@ -106,11 +99,26 @@ try {
 </head>  
 <body>  
 
+                <style>  
+                    select.form-control {  
+                        position: relative; /* Asegura el contexto de posicionamiento */  
+                    }  
+                </style>  
+
+<!-- aqui cambia segun los nombres de sus archivos-->
+<div class="header" style="margin-bottom: 20px; padding: 10px;">
+    <img src="logo_men.png" alt="Logo de la institución" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+    <!-- Contenedor de botones -->
+    <div class="buttons" style="margin-top: 10px;">
+        <a href="actualizar.php" style="text-decoration: none; padding: 10px 20px; color: white; background-color: #5bc0de; border-radius: 5px; display: inline-block; margin: 10px;">Consultar Instituciones</a>
+        <a href=".php" style="text-decoration: none; padding: 10px 20px; color: white; background-color: #5bc0de; border-radius: 5px; display: inline-block; margin: 10px;">Consultar Directivos</a>
+    </div>
+</div>
+
 <div class="container-fluid m-3">
     <div class="row">
         <div class="col-md-3">
             <h2>Filtros de búsqueda</h2>
-
             <!-- Formulario de Filtros de Institución -->
             <div class="mb-4 p-3 bg-light rounded">
                 <h5>Institución de Educación Superior</h5>
@@ -128,91 +136,83 @@ try {
                 </form>
             </div>
 
-            <div>
-                <h5 class="text-center">Departamento</h5>
-                <div class="row justify-content-center mb-4">
-                    <form method="POST" action="">
-                        <div class="form-group">
-                            <label>Seleccione un Departamento:</label>
-                            <select class="form-control" name="nombre_depar">
-                                <option value="Todos">Todos</option>
-                                <?php 
-                                    foreach ($departamentos as $departamento): 
-                                ?>  
-                                    <option value="<?= htmlspecialchars($departamento['nomb_depto']) ?>">
-                                        <?= htmlspecialchars($departamento['nomb_depto']) ?>
-                                    </option>  
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Buscar</button>
-                        <button type="reset" class="btn btn-warning">Limpiar</button>
-                    </form>
-                </div>
-            </div>
-
             <!-- Filtros Generales -->
             <h1 class="mt-3">Filtros Generales</h1>
             <form method="POST" action="">  
+            
+            <div class="form-group">
+                <label>Seleccione un Departamento:</label>
+                <select class="form-control" name="nombre_depar">
+                    <option value="Todos" <?= isset($nombre_depar) && $nombre_depar === 'Todos' ? 'selected' : '' ?>>Todos</option>
+                        <?php 
+                            foreach ($departamentos as $departamento): 
+                        ?>  
+                    <option value="<?= htmlspecialchars($departamento['nomb_depto']) ?>" <?= isset($nombre_depar) && $nombre_depar === $departamento['nomb_depto'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($departamento['nomb_depto']) ?>
+                    </option>  
+                        <?php endforeach; ?>
+                </select>
+            </div>
+
+
                 <div class="form-group">  
                     <label>Estado de la Institución:</label><br>  
-                    <input type="radio" name="nombre_estado" value="Todos" checked> Todos<br>
-                    <input type="radio" name="nombre_estado" value="Activa"> Activo  <br>
-                    <input type="radio" name="nombre_estado" value="Inactiva"> Inactivo  <br>
+                    <input type="radio" name="nombre_estado" value="Todos" <?= $nombre_estado === 'Todos' ? 'checked' : '' ?> checked> Todos<br>
+                    <input type="radio" name="nombre_estado" value="Activa" <?= $nombre_estado === 'Activa' ? 'checked' : '' ?>> Activo  <br>
+                    <input type="radio" name="nombre_estado" value="Inactiva" <?= $nombre_estado === 'Inactiva' ? 'checked' : '' ?>> Inactivo  <br>
                 </div>  
                 <div class="form-group">  
                     <label>Tipo de sede:</label><br>  
                     <select class="form-control" name="nombre_sede">  
-                        <option value="Todos">Todos</option>  
-                        <option value="Principal">Principal</option>  
-                        <option value="Seccional">Seccional</option>  
+                        <option value="Todos" <?= $nombre_sede === 'Todos' ? 'selected' : '' ?>>Todos</option>  
+                        <option value="Principal" <?= $nombre_sede === 'Principal' ? 'selected' : '' ?>>Principal</option>  
+                        <option value="Seccional" <?= $nombre_sede === 'Seccional' ? 'selected' : '' ?>>Seccional</option>  
                     </select>  
                 </div>  
                 <div class="form-group">  
                     <label>Sector:</label><br>  
                     <select class="form-control" name="nombre_sector">  
-                        <option value="Todos">Todos</option>  
-                        <option value="Oficial">Pública</option>  
-                        <option value="Privado">Privada</option>  
+                        <option value="Todos" <?= $nombre_sector === 'Todos' ? 'selected' : '' ?>>Todos</option>  
+                        <option value="Oficial" <?= $nombre_sector === 'Oficial' ? 'selected' : '' ?>>Pública</option>  
+                        <option value="Privado" <?= $nombre_sector === 'Privado' ? 'selected' : '' ?>>Privada</option>  
                     </select>  
                 </div> 
                 <div class="form-group">  
                     <label>Carácter académico:</label><br>  
                     <select class="form-control" name="nombre_caracter">  
-                        <option value="Todos">Todos</option>  
-                        <option value="Institución Técnica Profesional">Institución Técnica Profesional</option>  
-                        <option value="Institución Tecnológica">Institución Tecnológica</option>  
-                        <option value="Institución Universitaria/Escuela Tecnológica">Institución Universitaria/Escuela Tecnológica</option>
-                        <option value="Universidad">Universidad</option>  
+                        <option value="Todos" <?= $nombre_caracter === 'Todos' ? 'selected' : '' ?>>Todos</option>  
+                        <option value="Institución Técnica Profesional" <?= $nombre_caracter === 'Institución Técnica Profesional' ? 'selected' : '' ?>>Institución Técnica Profesional</option>  
+                        <option value="Institución Tecnológica" <?= $nombre_caracter === 'Institución Tecnológica' ? 'selected' : '' ?>>Institución Tecnológica</option>  
+                        <option value="Institución Universitaria/Escuela Tecnológica" <?= $nombre_caracter === 'Institución Universitaria/Escuela Tecnológica' ? 'selected' : '' ?>>Institución Universitaria/Escuela Tecnológica</option>
+                        <option value="Universidad" <?= $nombre_caracter === 'Universidad' ? 'selected' : '' ?>>Universidad</option>  
                     </select>  
                 </div>  
                 <div class="form-group">  
                     <label>Acto administrativo:</label><br>  
-                                    <!--nombre_acto es el parametro que sera pasado a la funcion filtros-->
                     <select class="form-control" name="nombre_acto">
-                                <option value="Todos">Todos</option>
-                                <?php 
-                                    foreach ($actos_administrativos as $acto_administrativo): 
-                                ?>  
-                                <!-- aqui va es el el nomb_admin por como se llama en la base que es en postgres-->
-                                    <option value="<?= htmlspecialchars($acto_administrativo['nomb_admin']) ?>">
-                                        <?= htmlspecialchars($acto_administrativo['nomb_admin']) ?>
-                                    </option>  
-                                <?php endforeach; ?>
-                            </select>  
+                        <option value="Todos" <?= isset($nombre_acto) && $nombre_acto === 'Todos' ? 'selected' : '' ?>>Todos</option>
+                            <?php 
+                                foreach ($actos_administrativos as $acto_administrativo): 
+                            ?>  
+                        <!-- aqui va es el el nomb_admin por como se llama en la base que es en postgres-->  
+                        <option value="<?= htmlspecialchars($acto_administrativo['nomb_admin']) ?>" <?= isset($nombre_acto) && $nombre_acto === $acto_administrativo['nomb_admin'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($acto_administrativo['nomb_admin']) ?>
+                        </option>  
+                        <?php endforeach; ?>
+                    </select>  
                 </div> 
                 <div class="form-group">  
                     <label>Nombre norma:</label><br>  
                     <select class="form-control" name="nombre_norma">
-                                <option value="Todos">Todos</option>
-                                <?php 
-                                    foreach ($normas_creaciones as $norma_creacion): 
-                                ?>  
-                                    <option value="<?= htmlspecialchars($norma_creacion['nomb_norma']) ?>">
-                                        <?= htmlspecialchars($norma_creacion['nomb_norma']) ?>
-                                    </option>  
-                                <?php endforeach; ?>
-                            </select>  
+                        <option value="Todos" <?= isset($nombre_norma) && $nombre_norma === 'Todos' ? 'selected' : '' ?>>Todos</option>
+                        <?php 
+                            foreach ($normas_creaciones as $norma_creacion): 
+                        ?>  
+                        <option value="<?= htmlspecialchars($norma_creacion['nomb_norma']) ?>" <?= isset($nombre_norma) && $nombre_norma === $norma_creacion['nomb_norma'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($norma_creacion['nomb_norma']) ?>
+                        </option>  
+                        <?php endforeach; ?>
+                    </select>  
                 </div> 
 
                 <button type="submit" class="btn btn-primary">Buscar</button>  
