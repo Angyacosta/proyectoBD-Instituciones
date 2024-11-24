@@ -236,7 +236,19 @@ try {
 
         <!-- Tabla de Resultados -->
         <div class="col-md-9">
-            <div class="container" style="overflow-x: auto;">  
+            <div class="col-auto">
+                <label for="num_registros" class="col-form-label">Mostrar </label>
+                <select name="num_registros" id="num_registros" class="form-select">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <label for="num_registros" class="col-form-label">Registros</label>
+            </div>
+
+            <div class="col-auto m-4" >  
+
                 <table class="table table-bordered mt-2" style="text-align: center;">  
                     <thead class="thead-dark">  
                         <tr>  
