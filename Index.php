@@ -78,24 +78,23 @@ try {
     $stmt->bindParam(':nombre_insti', $nombre_insti, PDO::PARAM_STR);
     $stmt->bindParam(':codigo_insti', $codigo_insti, PDO::PARAM_INT);
 
-
     // Ejecutar la consulta
     $stmt->execute();
 
     // Obtener los resultados
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    
 } catch (PDOException $e) {  
     echo "Error: " . $e->getMessage();  
     exit;  
 } 
 ?>  
-<style>  
+
+    <style>  
     select.form-control {  
        position: relative; /* Asegura el contexto de posicionamiento */  
     }  
-</style> 
+    </style> 
 
 <!DOCTYPE html>  
 <html lang="es">  
@@ -103,6 +102,7 @@ try {
     <meta charset="UTF-8">  
     <title>Inicio - Instituciones</title>  
     <link rel="stylesheet" href="styles.css">  
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>  
 <body style="background-color: #f0f0f0; color: #333; font-family: Arial, sans-serif; margin: 0; padding: 0;">
@@ -125,7 +125,7 @@ try {
             <!-- Formulario de Filtros de Institución -->
             <div class="mb-4 p-4 bg-light rounded border" style="margin: 3px; background-color: #f8f9fa;">
                 <h2>Institución Universitaria</h2>
-                <form method="POST" action="">
+                <form method="POST" action="" id="f_inst">
                     <div class="form-group">
                         <label>Nombre de la Institución</label>
                         <select class="form-control" name="nombre_insti">
@@ -153,13 +153,24 @@ try {
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Buscar</button>
-                    <button type="reset" class="btn btn-secondary">Limpiar</button> 
+                    <button type="button" class="btn btn-secondary" id="botonLimpiar">Limpiar</button>
                 </form>
+        <script>
+            $(document).ready(function() {
+                // Selector para el botón Limpiar
+                $('#botonLimpiar').click(function() {
+                    // Busca todos los select e input dentro del formulario f_filtros y establece su valor a "Todos"
+                    $('#f_inst').find('select, input').val('Todos');
+                });
+            });
+        </script>
             </div>
+
+
             <!-- Filtros Generales -->
         <div class="mb-4 p-4 bg-light rounded border" style="margin: 3px; background-color: #f8f9fa;">
             <h2 class="mt-3">Filtros Generales</h2>
-            <form method="POST" action="">  
+            <form method="POST" action="" id ="f_filtros">  
                 <div class="form-group"> 
                     <label>Estado de la Institución:</label><br>  
                     <input type="radio" name="nombre_estado" value="Todos" <?= $nombre_estado === 'Todos' ? 'checked' : '' ?> checked> Todos<br>
@@ -231,8 +242,20 @@ try {
                     </select>  
                 </div> 
                 <button type="submit" class="btn btn-primary">Buscar</button>  
-                <button type="reset" class="btn btn-secondary">Limpiar</button>  
+                <button type="button" class="btn btn-secondary" id="botonLimpiar1">Limpiar</button>  
             </form>
+            <script>
+            $(document).ready(function() {
+                // Selector para el botón Limpiar
+                $('#botonLimpiar1').click(function() {
+                    // Busca todos los select e input dentro del formulario f_filtros y establece su valor a "Todos"
+                    $('#f_filtros').find('select').val('Todos');
+                    $('#f_filtros').find('input[type="radio"]').prop('checked', false);
+                    $('#f_filtros').find('input[name="nombre_estado"][value="Todos"]').prop('checked', true);
+                    $('#f_filtros').find('input[name="nombre_norma"][value="Todos"]').prop('checked', true);
+                });
+            });
+        </script>
         </div>
     </div>
         <!-- Tabla de Resultados -->
