@@ -180,13 +180,19 @@ include 'inststyle.html';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizar Instituciones</title>
+     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> 
 </head>
 <body>
+<br>
+<div class="header" style="margin-bottom: 10px; padding: 5px;">
+    <img src="logo_men.png" alt="Logo de la institución" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+    </div>
 <div class="container-wrapper">  
 <div class="container2">
 <div class="update-link">
-    <a href="inicio.php" class="update-btn">volver a inicio</nav></a>
+    <a href="index.php" class="update-btn">volver a inicio</nav></a>
     </div>
+    
 <!-- Tabla para mostrar las instituciones -->
 <table border="1">
     <thead>
@@ -376,6 +382,7 @@ include 'inststyle.html';
             <p id="successNorma" style="display: none; color: green;">¡Valor válido!</p>
         <label for="fecha_creacion_update">Nueva Fecha de Creación:</label>
         <input type="date" name="fecha_creacion_update" id= "fecha_creacion_update"required>
+        <p id="mensaje_fecha" style="color: red;"></p>
         <br>
         <label for="programas_vigente_update">Nueva cantidad de Programas Vigentes:</label>
         <input type="text" min="0" id="programas_vigente_update" name="programas_vigente_update"  >
@@ -395,7 +402,6 @@ include 'inststyle.html';
             <?php if ($_SESSION['acreditada'] == 1): ?>
     <label for="fecha_acreditacion_update">Nueva Fecha de Acreditación:</label>
     <input type="date" name="fecha_acreditacion_update" id="fecha_acreditacion_update">
-    <p id="mensaje_fecha" style="color: red;"></p>
     <br>
 <?php endif; ?>
 
@@ -415,11 +421,14 @@ include 'inststyle.html';
 
         
         <label for="nit_update">Nuevo NIT:</label>
-        <input type="text" name="nit_update" placeholder="Ej: 899.999.063-3" >
+        <input type="text" name="nit_update" id="nit_update" placeholder="Ej: 899.999.063-3" pattern="\d{3}\.\d{3}\.\d{3}-\d" 
+        title="El formato debe ser: 899.999.063-3"> 
+        <p class="error-message" id="nitError">ingresa una entrada valida ejemplo 899.999.063-3</p>
         <br>
 
         <label for="pagina_web_update">Nueva Página Web:</label>
-        <input type="text" name="pagina_web_update" placeholder="Ej: https://www.unal.edu.co"  >
+        <input type="text" name="pagina_web_update" id="pagina_web_update" placeholder="Ej: https://www.unal.edu.co"  >
+        <p class="error-message" id="paginaWebError">ingresa una url válida.</p>
         <br>
 
 
@@ -427,75 +436,93 @@ include 'inststyle.html';
 
             <button type="submit" name="update_inst">Actualizar Institución</button>
 <!------------------------------------Validaciones ---------------------------------------------->
-           <script>
-
-    //--------------------------validacion NORMA
-        // Obtener referencias al input y a los mensajes
-        const normaInput = document.getElementById('norma_update');
-        const errorMessage = document.getElementById('errornorma');
-        const successMessage = document.getElementById('successNorma');
-        const spaceErrorMessage = document.getElementById('errorEspacio');
-
-// Evitar la tecla de espacio
-normaInput.addEventListener('keydown', function (event) {
-    if (event.code === 'Space') {
-        event.preventDefault(); // Bloquear la tecla de espacio
-        spaceErrorMessage.style.display = 'block'; // Mostrar mensaje de espacio
-        successMessage.style.display = 'none'; // Esconder mensaje de éxito
-        errorMessage.style.display = 'none'; // Esconder mensaje de error
-
-        // Esconder el mensaje de espacio después de 3 segundos
-        setTimeout(() => {
-            spaceErrorMessage.style.display = 'none';
-            // Si el campo es válido y no está vacío, mostrar el mensaje de éxito
-            validateNormaInput();
-        }, 2000); // 2000 ms = 2 segundos
-    }
-});
-
-   // Validar el campo en tiempo real
-normaInput.addEventListener('input', validateNormaInput);
-
-function validateNormaInput() {
-    const normaValue = normaInput.value.trim(); // Eliminar espacios antes/después del texto
-    
-    if (normaValue === '') {
-        // Si el campo está vacío, ocultar todos los mensajes
-        errorMessage.style.display = 'none';
-        successMessage.style.display = 'none';
-        spaceErrorMessage.style.display = 'none';
-    } 
-    // Verificar si es un número entero positivo o cero
-    else if (!/^\d+$/.test(normaValue)) {
-        // Mostrar mensaje de error si contiene letras, caracteres especiales o múltiples cadenas
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-        spaceErrorMessage='none';
-    } else {
-        // Mostrar mensaje de éxito si es válido
-        errorMessage.style.display = 'none';
-        successMessage.style.display = 'block';
-        spaceErrorMessage='none';
-    }
-
-    }
-        // Prevenir el envío del formulario si hay un error
-        document.getElementById('normaForm').addEventListener('submit', function (e) {
-            const normaValue = parseInt(normaInput.value);
-
-            if (normaValue < 0 || !/^\d+$/.test(normaValue)) {
-                e.preventDefault(); // Prevenir envío
-                alert("Por favor, corrige los errores antes de enviar.");
-            }
-        });
-    </script>  
-    <script>
-            //-----------------------VALIDAR PROGRAMAS VIGENTES ---------------------------------
+<script>
     // Obtener referencias al input y a los mensajes
+    const normaInput = document.getElementById('norma_update');
+    const errorMessage = document.getElementById('errornorma');
+    const successMessage = document.getElementById('successNorma');
+    const spaceErrorMessage = document.getElementById('errorEspacio');
+    const formularioActualizar3 = document.getElementById("formulario");
+    
+    const vigenciaInput = document.getElementById('vigencia_update');
+    const errorMessageVigencia = document.getElementById('errorVigencia');
+    const spaceErrorMessageVigencia = document.getElementById('errorEspacioVigencia');
+    const successMessageVigencia = document.getElementById('successVigencia');
+                
     const programasInput = document.getElementById('programas_vigente_update');
     const errorMessage2 = document.getElementById('errorvigentes');
     const spaceErrorMessage2 = document.getElementById('errorEspacio2');
     const successMessage2 = document.getElementById('successProgramas');
+
+    const programasConvenioInput = document.getElementById('programas_convenio_update');
+        const errorMessageConvenio = document.getElementById('errorConvenio');
+        const spaceErrorMessageConvenio = document.getElementById('errorEspacioConvenio');
+        const successMessageConvenio = document.getElementById('successConvenio');
+
+        const resolucionAcreditacionInput = document.getElementById('resolucion_acreditacion_update');
+    const errorMessageAcreditacion = document.getElementById('errorAcreditacion');
+    const spaceErrorMessageAcreditacion = document.getElementById('errorEspacioAcreditacion');
+    const successMessageAcreditacion = document.getElementById('successAcreditacion');
+
+    const telefono = document.getElementById('telefono_update');
+    const telefonoError = document.getElementById('telefonoError');
+    const nit = document.getElementById('nit_update');
+    const nitError = document.getElementById('nitError');
+    const paginaWeb = document.getElementById('pagina_web_update');
+    const paginaWebError = document.getElementById('paginaWebError');
+    const formularioActualizar2 = document.getElementById("formulario");
+
+
+
+    // Evitar la tecla de espacio
+    normaInput.addEventListener('keydown', function (event) {
+        if (event.code === 'Space') {
+            event.preventDefault(); // Bloquear la tecla de espacio
+            spaceErrorMessage.style.display = 'block'; // Mostrar mensaje de espacio
+            successMessage.style.display = 'none'; // Esconder mensaje de éxito
+            errorMessage.style.display = 'none'; // Esconder mensaje de error
+
+            // Esconder el mensaje de espacio después de 2 segundos
+            setTimeout(() => {
+                spaceErrorMessage.style.display = 'none';
+                // Validar el campo
+                validateNormaInput();
+            }, 2000); // 2000 ms = 2 segundos
+        }
+    });
+
+    // Validar el campo en tiempo real
+    normaInput.addEventListener('input', validateNormaInput);
+
+    function validateNormaInput() {
+        const normaValue = normaInput.value.trim(); // Eliminar espacios antes/después del texto
+
+        if (normaValue === '') {
+            // Si el campo está vacío, ocultar todos los mensajes
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            spaceErrorMessage.style.display = 'none';
+            return true;
+        } 
+        // Verificar si es un número entero positivo
+        else if (!/^\d+$/.test(normaValue)) {
+            // Mostrar mensaje de error si contiene letras o caracteres no numéricos
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            spaceErrorMessage.style.display = 'none';
+            return false;
+        } else {
+            // Mostrar mensaje de éxito si es válido
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'block';
+            spaceErrorMessage.style.display = 'none';
+            return true;
+        }
+    }
+
+//-----------------------VALIDAR PROGRAMAS VIGENTES ---------------------------------
+    // Obtener referencias al input y a los mensajes
+
 
     // Evitar la tecla de espacio
 programasInput.addEventListener('keydown', function (event) {
@@ -525,12 +552,14 @@ programasInput.addEventListener('input', validateProgramaInput);
         errorMessage2.style.display = 'none';
         successMessage2.style.display = 'none';
         spaceErrorMessage2.style.display = 'none';
+        return true;
     } 
     // Verificar si el valor contiene letras o caracteres no válidos
     else if (!/^\d+$/.test(programasValue)) {
         errorMessage2.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
         successMessage2.style.display = 'none'; // Esconder el mensaje de éxito
         spaceErrorMessage2.style.display = 'none'; // Esconder mensaje de espacio
+        return false;
     } // Verificar si el campo está vacío
     // Si el valor es válido (solo números)
     else {
@@ -538,28 +567,12 @@ programasInput.addEventListener('input', validateProgramaInput);
         errorMessage2.style.display = 'none';
         successMessage2.style.display = 'block';
         spaceErrorMessage2.style.display = 'none'; // Esconder mensaje de espacio
+        return true;
     }
 }
 
-    // Prevenir el envío del formulario si hay un error
-    document.getElementById('programasForm').addEventListener('submit', function (e) {
-        const programasValue = programasInput.value.trim();
-
-        // Verificar si el valor está vacío o no es un número positivo
-        if (programasValue < 0 || !/^\d+$/.test(programasValue)) {
-            e.preventDefault(); // Prevenir envío
-            alert("Por favor, corrige los errores antes de enviar.");
-        }
-    });
-
-    </script>
-        <script>
         //-----------------------VALIDAR PROGRAMAS EN CONVENIO ---------------------------------
         // Obtener referencias al input y a los mensajes
-        const programasConvenioInput = document.getElementById('programas_convenio_update');
-        const errorMessageConvenio = document.getElementById('errorConvenio');
-        const spaceErrorMessageConvenio = document.getElementById('errorEspacioConvenio');
-        const successMessageConvenio = document.getElementById('successConvenio');
 
         // Evitar la tecla de espacio
         programasConvenioInput.addEventListener('keydown', function (event) {
@@ -588,12 +601,14 @@ programasInput.addEventListener('input', validateProgramaInput);
                 errorMessageConvenio.style.display = 'none';
                 successMessageConvenio.style.display = 'none';
                 spaceErrorMessageConvenio.style.display = 'none';
+                return true;
             } 
             // Verificar si el valor contiene letras o caracteres no válidos
             else if (!/^\d+$/.test(programasValue)) {
                 errorMessageConvenio.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
                 successMessageConvenio.style.display = 'none'; // Esconder el mensaje de éxito
                 spaceErrorMessageConvenio.style.display = 'none'; // Esconder mensaje de espacio
+                return false;
             } 
             // Si el valor es válido (solo números)
             else {
@@ -601,28 +616,12 @@ programasInput.addEventListener('input', validateProgramaInput);
                 errorMessageConvenio.style.display = 'none';
                 successMessageConvenio.style.display = 'block';
                 spaceErrorMessageConvenio.style.display = 'none'; // Esconder mensaje de espacio
+                return true;
             }
         }
 
-        // Prevenir el envío del formulario si hay un error
-        document.getElementById('programasConvenioForm').addEventListener('submit', function (e) {
-            const programasValue = programasConvenioInput.value.trim();
-
-            // Verificar si el valor está vacío o no es un número positivo
-            if (programasValue < 0 || !/^\d+$/.test(programasValue)) {
-                e.preventDefault(); // Prevenir envío
-                alert("Por favor, corrige los errores antes de enviar.");
-            }
-        });
-    </script>
-           <script>
     //-----------------------VALIDAR RESOLUCIÓN DE ACREDITACIÓN ---------------------------------
-    // Obtener referencias al input y a los mensajes
-    const resolucionAcreditacionInput = document.getElementById('resolucion_acreditacion_update');
-    const errorMessageAcreditacion = document.getElementById('errorAcreditacion');
-    const spaceErrorMessageAcreditacion = document.getElementById('errorEspacioAcreditacion');
-    const successMessageAcreditacion = document.getElementById('successAcreditacion');
-
+    
     // Evitar la tecla de espacio
     resolucionAcreditacionInput.addEventListener('keydown', function (event) {
         if (event.code === 'Space') {
@@ -651,12 +650,14 @@ programasInput.addEventListener('input', validateProgramaInput);
             errorMessageAcreditacion.style.display = 'none';
             successMessageAcreditacion.style.display = 'none';
             spaceErrorMessageAcreditacion.style.display = 'none';
+            return true;
         } 
         // Verificar si el valor contiene letras o caracteres no válidos
         else if (!/^\d+$/.test(resolucionValue)) {
             errorMessageAcreditacion.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
             successMessageAcreditacion.style.display = 'none'; // Esconder el mensaje de éxito
             spaceErrorMessageAcreditacion.style.display = 'none'; // Esconder mensaje de espacio
+            return false;
         } 
         // Si el valor es válido (solo números)
         else {
@@ -664,27 +665,12 @@ programasInput.addEventListener('input', validateProgramaInput);
             errorMessageAcreditacion.style.display = 'none';
             successMessageAcreditacion.style.display = 'block';
             spaceErrorMessageAcreditacion.style.display = 'none'; // Esconder mensaje de espacio
+            return true;
         }
     }
 
-    // Prevenir el envío del formulario si hay un error
-    document.getElementById('resolucionAcreditacionForm').addEventListener('submit', function (e) {
-        const resolucionValue = resolucionAcreditacionInput.value.trim();
-
-        // Verificar si el valor está vacío o no es un número positivo
-        if (resolucionValue < 0 || !/^\d+$/.test(resolucionValue)) {
-            e.preventDefault(); // Prevenir envío
-            alert("Por favor, corrige los errores antes de enviar.");
-        }
-    });
-</script>
-<script>
     //-----------------------VALIDAR VIGENCIA ---------------------------------
     // Obtener referencias al input y a los mensajes
-    const vigenciaInput = document.getElementById('vigencia_update');
-    const errorMessageVigencia = document.getElementById('errorVigencia');
-    const spaceErrorMessageVigencia = document.getElementById('errorEspacioVigencia');
-    const successMessageVigencia = document.getElementById('successVigencia');
 
     // Evitar la tecla de espacio
     vigenciaInput.addEventListener('keydown', function (event) {
@@ -714,12 +700,14 @@ programasInput.addEventListener('input', validateProgramaInput);
             errorMessageVigencia.style.display = 'none';
             successMessageVigencia.style.display = 'none';
             spaceErrorMessageVigencia.style.display = 'none';
+            return true;
         } 
         // Verificar si el valor contiene letras o caracteres no válidos
         else if (!/^\d+$/.test(vigenciaValue)) {
             errorMessageVigencia.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
             successMessageVigencia.style.display = 'none'; // Esconder el mensaje de éxito
             spaceErrorMessageVigencia.style.display = 'none'; // Esconder mensaje de espacio
+            return false;
         } 
         // Si el valor es válido (solo números)
         else {
@@ -727,43 +715,66 @@ programasInput.addEventListener('input', validateProgramaInput);
             errorMessageVigencia.style.display = 'none';
             successMessageVigencia.style.display = 'block';
             spaceErrorMessageVigencia.style.display = 'none'; // Esconder mensaje de espacio
+            return true;
         }
     }
 
-    // Prevenir el envío del formulario si hay un error
-    document.getElementById('vigenciaForm').addEventListener('submit', function (e) {
-        const vigenciaValue = vigenciaInput.value.trim();
 
-        // Verificar si el valor está vacío o no es un número positivo
-        if (vigenciaValue < 0 || !/^\d+$/.test(vigenciaValue)) {
-            e.preventDefault(); // Prevenir envío
-            alert("Por favor, corrige los errores antes de enviar.");
+    // Validaciones individuales
+    const validarTelefono = () => {
+        const esValido = telefono.value === "" || /^\d{7}$/.test(telefono.value) || /^3\d{9}$/.test(telefono.value);
+        telefonoError.style.display = esValido ? 'none' : 'block';
+        telefono.classList.toggle('input-error-message', !esValido);
+        return esValido;
+    };
+
+    const validarNit = () => {
+        const esValido = nit.value === "" || /^\d{3}\.\d{3}\.\d{3}-\d$/.test(nit.value);
+        nitError.style.display = esValido ? 'none' : 'block';
+        nit.classList.toggle('input-error-message', !esValido);
+        return esValido;
+    };
+
+    const validarPaginaWeb = () => {
+        if (paginaWeb.value === "") {
+            paginaWebError.style.display = 'none';
+            paginaWeb.classList.remove('input-error-message');
+            return true;
+        }
+        try {
+            new URL(paginaWeb.value);
+            paginaWebError.style.display = 'none';
+            paginaWeb.classList.remove('input-error-message');
+            return true;
+        } catch {
+            paginaWebError.style.display = 'block';
+            paginaWeb.classList.add('input-error-message');
+            return false;
+        }
+    };
+
+    telefono.addEventListener('input', validarTelefono);
+    nit.addEventListener('input', validarNit);
+    paginaWeb.addEventListener('input', validarPaginaWeb);
+
+
+     // Validación al enviar el formulario
+     formularioActualizar3.addEventListener('submit', (e) => {
+        const normaValida = validateNormaInput();
+        const resolucionvalida =validarResolucionInput();
+        const vigentesvalido = validateProgramaInput();
+        const vigenciavalida =validarVigenciaInput();
+        const coneveniovalido =ValidarConvenioInput();
+        const telefonoValido = validarTelefono();
+        const nitValido = validarNit();
+        const paginaWebValida = validarPaginaWeb();
+        // Si el campo no es válido, prevenir el envío
+        if (!normaValida || !resolucionvalida || !vigenciavalida || !vigentesvalido || !coneveniovalido || !telefonoValido || !nitValido || !paginaWebValida ) {
+            e.preventDefault();
+            alert("Por favor, corrige los errores antes de enviar el formulario.");
         }
     });
-</script>
-<script>
-    // Validación de teléfono
-const telefono = document.getElementById('telefono_update');
-const telefonoError = document.getElementById('telefonoError');
 
-telefono.addEventListener('input', () => {
-    // Si el campo está vacío, no se valida, pero si contiene algo, validamos
-    const esValido = telefono.value === "" || /^\d{7}$/.test(telefono.value) || /^3\d{9}$/.test(telefono.value);
-    telefonoError.style.display = esValido ? 'none' : 'block';
-    telefono.classList.toggle('input-error-message', !esValido);
-});
-
-// Validación al enviar el formulario
-const formularioActualizar2 = document.getElementById("formulario");
-formularioActualizar2.addEventListener('submit', function(e) {
-    // Prevenir el envío del formulario si el teléfono no es válido
-    if (telefono.value !== "" && !(/^\d{7}$/.test(telefono.value) || /^3\d{9}$/.test(telefono.value))) {
-        e.preventDefault();  // Esto previene que el formulario se envíe
-        alert("Ingresa un teléfono válido.");
-        return false;  // Asegura que no se envíe el formulario
-    }
-    // Si pasa la validación, el formulario se enviará normalmente
-});
 </script>
 
 
@@ -797,37 +808,7 @@ formularioActualizar2.addEventListener('submit', function(e) {
             direccionInput.addEventListener("input", validarDireccion);
         }
 
-        // Llamar a la función de validación en tiempo real al cargar la página
-        window.onload = function() {
-            validarEnTiempoReal();
-        };
-
-        // Validación al enviar el formulario
-        const formularioActualizar = document.getElementById("formulario");
-        formularioActualizar.addEventListener('submit', function(e) {
-            // Prevenir el envío del formulario si la dirección no es válida
-            if (!validarDireccion()) {
-                e.preventDefault();  // Esto previene que el formulario se envíe
-                alert("Ingresa una dirección válida.");
-                return false;  // Asegura que no se envíe el formulario
-            }
-            // Si pasa la validación, el formulario se enviará normalmente
-        });
-    </script>
-<script>
-// Configurar la fecha actual al cargar la página
-function establecerFechaActual() {
-    const fechaHoy = new Date();
-    const dia = String(fechaHoy.getDate()).padStart(2, '0');
-    const mes = String(fechaHoy.getMonth() + 1).padStart(2, '0');
-    const anio = fechaHoy.getFullYear();
-    const fechaFormateada = `${anio}-${mes}-${dia}`;
-
-    // Configurar el atributo 'max' para las fechas
-    document.getElementById("fecha_creacion_update").max = fechaFormateada;
-    document.getElementById("fecha_acreditacion_update").max = fechaFormateada;
-}
-
+        const estadoAcreditada = <?php echo json_encode($_SESSION['acreditada']); ?>;
 // Validar fechas
 function validarFechas() {
     const fechaCreacion = document.getElementById("fecha_creacion_update").value;
@@ -839,50 +820,58 @@ function validarFechas() {
     const fechaCreacionObj = fechaCreacion ? new Date(fechaCreacion) : null;
     const fechaAcreditacionObj = fechaAcreditacion ? new Date(fechaAcreditacion) : null;
 
-    // Validación: Fecha de creación no mayor a hoy
-    if (fechaCreacionObj && fechaCreacionObj > fechaHoy) {
-        mensajeFecha.textContent = "La fecha de creación no puede ser mayor a la fecha actual.";
-        return false;
-    }
+    if (estadoAcreditada== 1){
 
     // Validación: Fecha de acreditación no menor a fecha de creación
-    if (fechaCreacionObj && fechaAcreditacionObj && fechaAcreditacionObj < fechaCreacionObj) {
+    if (fechaAcreditacionObj < fechaCreacionObj) {
         mensajeFecha.textContent = "La fecha de acreditación no puede ser anterior a la fecha de creación.";
         return false;
+
     }
 
     // Validación: Fecha de acreditación no mayor a hoy
-    if (fechaAcreditacionObj && fechaAcreditacionObj > fechaHoy) {
+    if (fechaAcreditacionObj > fechaHoy) {
         mensajeFecha.textContent = "La fecha de acreditación no puede ser mayor a la fecha actual.";
         return false;
     }
+    }
+   // Validación: Fecha de creación no mayor a hoy
+   if (fechaCreacionObj> fechaHoy) {
+        mensajeFecha.textContent = "La fecha de creación no puede ser mayor a la fecha actual.";
+        return false;
+    }
+    if (!fechaAcreditacion) {
+                mensajeFecha.textContent = "La fecha de acreditación es obligatoria para instituciones acreditadas.";
+                mensajeFecha.style.color = "red";
+                return false;
+            }
 
     // Limpiar mensaje de error si todo es válido
     mensajeFecha.textContent = "";
     return true;
 }
 
-// Manejar el envío del formulario
-function manejarEnvio(event) {
-    const sonFechasValidas = validarFechas();
-    if (!sonFechasValidas) {
-        event.preventDefault(); // Evitar el envío si hay errores
-        alert("Corrige las fechas antes de enviar.");
+    // Manejar el envío del formulario
+    function manejarEnvio(event) {
+        const esDireccionValida = validarDireccion();
+        const sonFechasValidas = validarFechas();
+
+        if (!esDireccionValida || !sonFechasValidas) {
+            event.preventDefault(); // Evitar el envío si hay errores
+            alert("Corrige los errores antes de enviar.");
+        }
     }
-}
+    // Inicializar eventos y configuración al cargar la página
+    window.onload = function () {
+        // Validación en tiempo real para los campos
+        document.getElementById("direccion_update").addEventListener("input", validarDireccion);
+        document.getElementById("fecha_creacion_update").addEventListener("input", validarFechas);
+        document.getElementById("fecha_acreditacion_update").addEventListener("input", validarFechas);
 
-// Inicializar eventos y configuración al cargar la página
-window.onload = function () {
-    establecerFechaActual();
-
-    // Validación en tiempo real para los campos de fecha
-    document.getElementById("fecha_creacion_update").addEventListener("input", validarFechas);
-    document.getElementById("fecha_acreditacion_update").addEventListener("input", validarFechas);
-
-    // Validar al enviar el formulario
-    const formulario = document.getElementById("formulario");
-    formulario.addEventListener("submit", manejarEnvio);
-};
+        // Validar al enviar el formulario
+        const formulario = document.getElementById("formulario");
+        formulario.addEventListener("submit", manejarEnvio);
+    };
 </script>
 
 
