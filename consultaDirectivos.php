@@ -135,31 +135,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<p>Error al actualizar el directivo.</p>";
         }
     }elseif (isset($_POST['delete'])) {
-        // Eliminar directivo
-        $cod_directivo = $_POST['cod_directivo_delete'];
-        
-        // Verificar si el código ya existe
+        // Obtener el código del directivo a eliminar desde el formulario
+    $cod_directivo = $_POST['cod_directivo_delete'];
+
+    try {
+        // Verificar si el código del directivo existe en la tabla
         $sql_check = "SELECT COUNT(*) FROM directivos WHERE cod_directivo = ?";
         $stmt_check = $conn->prepare($sql_check);
         $stmt_check->execute([$cod_directivo]);
         $exists = $stmt_check->fetchColumn();
-    
+
         if ($exists == 0) {
-            echo "<script>alert('El código que desea eliminar no se encuentra en la tabla. Intenta de nuevo');</script>";
+            // Mostrar alerta si el código no existe
+            echo "<script>
+                alert('El código que desea eliminar no se encuentra en la tabla. Intenta de nuevo.');
+            </script>";
         } else {
-            // Eliminar el directivo
+            // Intentar eliminar el directivo
             $sql = "DELETE FROM directivos WHERE cod_directivo = ?";
             $stmt = $conn->prepare($sql);
+
             if ($stmt->execute([$cod_directivo])) {
+                // Mostrar mensaje de éxito y recargar la página
                 echo "<script>
-                alert('Directivo eliminado con éxito.');
-                window.location.href = window.location.href;
-              </script>";
-        
+                    alert('Directivo eliminado con éxito.');
+                    window.location.href = window.location.href;
+                </script>";
             } else {
-                echo "<p>Error al eliminar el directivo.</p>";
+                // Mostrar mensaje en caso de error al ejecutar la consulta
+                echo "<script>
+                    alert('Hubo un problema al eliminar el directivo. Intenta de nuevo.');
+                </script>";
             }
         }
+    } catch (PDOException $e) {
+        // Manejo de errores específicos como restricciones de clave foránea
+        if ($e->getCode() == '23503') { // Código específico de PostgreSQL para clave foránea
+            echo "<script>
+                alert('¡INTENTO DE VIOLACIÓN!   No se puede eliminar porque está relacionado con otra tabla.');
+            </script>";
+        } else {
+            // Mostrar un error genérico
+            echo "<script>
+                alert('Error inesperado: " . $e->getMessage() . "');
+            </script>";
+        }
+    }
     }
 }
 $activeForm = isset($_SESSION['active_form']) ? $_SESSION['active_form'] : null;    
@@ -171,12 +192,19 @@ $activeForm = isset($_SESSION['active_form']) ? $_SESSION['active_form'] : null;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Actualizar Directivos</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> 
 </head>
 <body>
     <br>
-<div class="update-link">
-    <a href="inicio.php" class="update-btn">volver a inicio</nav></a>
+    <div class="header" style="margin-bottom: 10px; padding: 10px;">
+    <img src="logo_men.png" alt="Logo de la institución" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+    <!-- Contenedor de botones -->
+    <div class="update-link">
+    <a href="index.php" class="update-btn">volver a inicio</nav></a>
     </div>
+
+</div>
+
 <div class="container-wrapper"> 
 <div class="table-container">
     <table>
