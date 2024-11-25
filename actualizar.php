@@ -753,34 +753,8 @@ programasInput.addEventListener('input', validateProgramaInput);
         }
     };
 
-    telefono.addEventListener('input', validarTelefono);
-    nit.addEventListener('input', validarNit);
-    paginaWeb.addEventListener('input', validarPaginaWeb);
-
-
-     // Validación al enviar el formulario
-     formularioActualizar3.addEventListener('submit', (e) => {
-        const normaValida = validateNormaInput();
-        const resolucionvalida =validarResolucionInput();
-        const vigentesvalido = validateProgramaInput();
-        const vigenciavalida =validarVigenciaInput();
-        const coneveniovalido =ValidarConvenioInput();
-        const telefonoValido = validarTelefono();
-        const nitValido = validarNit();
-        const paginaWebValida = validarPaginaWeb();
-        // Si el campo no es válido, prevenir el envío
-        if (!normaValida || !resolucionvalida || !vigenciavalida || !vigentesvalido || !coneveniovalido || !telefonoValido || !nitValido || !paginaWebValida ) {
-            e.preventDefault();
-            alert("Por favor, corrige los errores antes de enviar el formulario.");
-        }
-    });
-
-</script>
-
-
-    <script>
-        // Función JavaScript para validar la dirección en tiempo real
-        function validarDireccion() {
+     // Función JavaScript para validar la dirección en tiempo real
+ function validarDireccion() {
             const direccion = document.getElementById("direccion_update").value;
             const mensaje = document.getElementById("mensaje");
             // Expresión regular para validar las direcciones con "barrio" sin necesidad de "#" o "No"
@@ -801,77 +775,128 @@ programasInput.addEventListener('input', validateProgramaInput);
                 return true;
             }
         }
+    telefono.addEventListener('input', validarTelefono);
+    nit.addEventListener('input', validarNit);
+    paginaWeb.addEventListener('input', validarPaginaWeb);
 
-        // Validación en tiempo real mientras el usuario escribe
-        function validarEnTiempoReal() {
-            const direccionInput = document.getElementById("direccion_update");
+// Validación en tiempo real mientras el usuario escribe
+const direccionInput = document.getElementById("direccion_update");
             direccionInput.addEventListener("input", validarDireccion);
-        }
 
-        const estadoAcreditada = <?php echo json_encode($_SESSION['acreditada']); ?>;
+
+     // Validación al enviar el formulario
+     formularioActualizar3.addEventListener('submit', (e) => {
+        const normaValida = validateNormaInput();
+        const resolucionvalida =validarResolucionInput();
+        const vigentesvalido = validateProgramaInput();
+        const vigenciavalida =validarVigenciaInput();
+        const coneveniovalido =ValidarConvenioInput();
+        const telefonoValido = validarTelefono();
+        const nitValido = validarNit();
+        const paginaWebValida = validarPaginaWeb();
+        const direccionvalida =validarDireccion();
+        // Si el campo no es válido, prevenir el envío
+        if (!normaValida || !resolucionvalida || !vigenciavalida || !vigentesvalido || !coneveniovalido || !telefonoValido || !nitValido || !paginaWebValida  || !direccionvalida) {
+            e.preventDefault();
+            alert("Por favor, corrige los errores antes de enviar el formulario.");
+        }
+    });
+
+</script>
+
+
+    <script>
+       
+  // Configurar la fecha actual al cargar la página
+function establecerFechaActual() {
+    const fechaHoy = new Date();
+    const dia = String(fechaHoy.getDate()).padStart(2, '0');
+    const mes = String(fechaHoy.getMonth() + 1).padStart(2, '0');
+    const anio = fechaHoy.getFullYear();
+    const fechaFormateada = `${anio}-${mes}-${dia}`;
+    // Configurar el atributo 'max' para las fechas
+    document.getElementById("fecha_creacion_update").max = fechaFormateada;
+    document.getElementById("fecha_acreditacion_update").max = fechaFormateada;
+}
+
+// Normalizar fechas (quitar horas, minutos y segundos)
+function normalizarFecha(fecha) {
+    const nuevaFecha = new Date(fecha);
+    nuevaFecha.setHours(0, 0, 0, 0); // Establecer hora a 00:00:00
+    return nuevaFecha;
+}
+const estadoAcreditada = <?php echo json_encode($_SESSION['acreditada']); ?>;
 // Validar fechas
 function validarFechas() {
     const fechaCreacion = document.getElementById("fecha_creacion_update").value;
     const fechaAcreditacion = document.getElementById("fecha_acreditacion_update").value;
-    const fechaHoy = new Date();
+    const fechaHoy = normalizarFecha(new Date());
     const mensajeFecha = document.getElementById("mensaje_fecha");
 
-    // Convertir fechas en objetos Date para comparar
-    const fechaCreacionObj = fechaCreacion ? new Date(fechaCreacion) : null;
-    const fechaAcreditacionObj = fechaAcreditacion ? new Date(fechaAcreditacion) : null;
+    // Convertir fechas en objetos Date normalizados
+    const fechaCreacionObj = fechaCreacion ? normalizarFecha(fechaCreacion) : null;
+    const fechaAcreditacionObj = fechaAcreditacion ? normalizarFecha(fechaAcreditacion) : null;
 
-    if (estadoAcreditada== 1){
+    // Validaciones
+    if (estadoAcreditada == 1) {
+        // Validación: Fecha de acreditación no menor a fecha de creación
+        if (fechaAcreditacionObj < fechaCreacionObj) {
+            mensajeFecha.textContent = "La fecha de acreditación no puede ser anterior a la fecha de creación.";
+            mensajeFecha.style.color = "red";
+            return false;
+        }
 
-    // Validación: Fecha de acreditación no menor a fecha de creación
-    if (fechaAcreditacionObj < fechaCreacionObj) {
-        mensajeFecha.textContent = "La fecha de acreditación no puede ser anterior a la fecha de creación.";
-        return false;
+        // Validación: Fecha de acreditación no mayor a hoy
+        if (fechaAcreditacionObj > fechaHoy) {
+            mensajeFecha.textContent = "La fecha de acreditación no puede ser mayor a la fecha actual.";
+            mensajeFecha.style.color = "red";
+            return false;
+        }
 
+        // Validación: Fecha de acreditación obligatoria para instituciones acreditadas
+        if (!fechaAcreditacion) {
+            mensajeFecha.textContent = "La fecha de acreditación es obligatoria para instituciones acreditadas.";
+            mensajeFecha.style.color = "red";
+            return false;
+        }
     }
 
-    // Validación: Fecha de acreditación no mayor a hoy
-    if (fechaAcreditacionObj > fechaHoy) {
-        mensajeFecha.textContent = "La fecha de acreditación no puede ser mayor a la fecha actual.";
-        return false;
-    }
-    }
-   // Validación: Fecha de creación no mayor a hoy
-   if (fechaCreacionObj> fechaHoy) {
+    // Validación: Fecha de creación no mayor a hoy
+    if (fechaCreacionObj > fechaHoy) {
         mensajeFecha.textContent = "La fecha de creación no puede ser mayor a la fecha actual.";
+        mensajeFecha.style.color = "red";
         return false;
     }
-    if (!fechaAcreditacion) {
-                mensajeFecha.textContent = "La fecha de acreditación es obligatoria para instituciones acreditadas.";
-                mensajeFecha.style.color = "red";
-                return false;
-            }
 
     // Limpiar mensaje de error si todo es válido
     mensajeFecha.textContent = "";
     return true;
 }
 
-    // Manejar el envío del formulario
-    function manejarEnvio(event) {
-        const esDireccionValida = validarDireccion();
-        const sonFechasValidas = validarFechas();
+// Manejar el envío del formulario
+function manejarEnvio(event) {
+    const sonFechasValidas = validarFechas();
 
-        if (!esDireccionValida || !sonFechasValidas) {
-            event.preventDefault(); // Evitar el envío si hay errores
-            alert("Corrige los errores antes de enviar.");
-        }
+    if (!sonFechasValidas) {
+        event.preventDefault(); // Evitar el envío si hay errores
+        alert("Corrige los errores antes de enviar.");
     }
-    // Inicializar eventos y configuración al cargar la página
-    window.onload = function () {
-        // Validación en tiempo real para los campos
-        document.getElementById("direccion_update").addEventListener("input", validarDireccion);
-        document.getElementById("fecha_creacion_update").addEventListener("input", validarFechas);
-        document.getElementById("fecha_acreditacion_update").addEventListener("input", validarFechas);
+}
 
-        // Validar al enviar el formulario
-        const formulario = document.getElementById("formulario");
-        formulario.addEventListener("submit", manejarEnvio);
-    };
+// Inicializar eventos y configuración al cargar la página
+window.onload = function () {
+    // Configurar la fecha actual al cargar
+    establecerFechaActual();
+
+    // Validación en tiempo real para los campos
+    document.getElementById("fecha_creacion_update").addEventListener("input", validarFechas);
+    document.getElementById("fecha_acreditacion_update").addEventListener("input", validarFechas);
+
+    // Validar al enviar el formulario
+    const formulario = document.getElementById("formulario");
+    formulario.addEventListener("submit", manejarEnvio);
+};
+
 </script>
 
 
