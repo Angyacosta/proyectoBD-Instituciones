@@ -503,7 +503,15 @@ include 'inststyle.html';
             successMessage.style.display = 'none';
             spaceErrorMessage.style.display = 'none';
             return true;
-        } 
+        } // Verificar si el valor excede 10 caracteres
+    if (normaValue.length > 10) {
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        spaceErrorMessage.style.display = 'block';
+        spaceErrorMessage.textContent = "El valor no debe exceder los 10 caracteres.";
+        spaceErrorMessage.style.color = "red";
+        return false;
+    }
         // Verificar si es un número entero positivo
         else if (!/^\d+$/.test(normaValue)) {
             // Mostrar mensaje de error si contiene letras o caracteres no numéricos
@@ -553,7 +561,15 @@ programasInput.addEventListener('input', validateProgramaInput);
         successMessage2.style.display = 'none';
         spaceErrorMessage2.style.display = 'none';
         return true;
-    } 
+    } // Verificar si el valor excede 10 caracteres
+    if (programasValue.length > 10) {
+        errorMessage2.style.display = 'none';
+        successMessage2.style.display = 'none';
+        spaceErrorMessage2.style.display = 'block';
+        spaceErrorMessage2.textContent = "El valor no debe exceder los 10 caracteres.";
+        spaceErrorMessage2.style.color = "red";
+        return false;
+    }
     // Verificar si el valor contiene letras o caracteres no válidos
     else if (!/^\d+$/.test(programasValue)) {
         errorMessage2.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
@@ -602,7 +618,15 @@ programasInput.addEventListener('input', validateProgramaInput);
                 successMessageConvenio.style.display = 'none';
                 spaceErrorMessageConvenio.style.display = 'none';
                 return true;
-            } 
+            } // Verificar si el valor excede 10 caracteres
+    if (programasValue.length > 10) {
+        errorMessageConvenio.style.display = 'none';
+        successMessageConvenio.style.display = 'none';
+        spaceErrorMessageConvenio.style.display = 'block';
+        spaceErrorMessageConvenio.textContent = "El valor no debe exceder los 10 caracteres.";
+        spaceErrorMessageConvenio.style.color = "red";
+        return false;
+    }
             // Verificar si el valor contiene letras o caracteres no válidos
             else if (!/^\d+$/.test(programasValue)) {
                 errorMessageConvenio.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
@@ -651,7 +675,14 @@ programasInput.addEventListener('input', validateProgramaInput);
             successMessageAcreditacion.style.display = 'none';
             spaceErrorMessageAcreditacion.style.display = 'none';
             return true;
-        } 
+        } if (resolucionValue.length > 10) {
+            errorMessageAcreditacion.style.display = 'none'; // Esconder mensaje de error general
+        successMessageAcreditacion.style.display = 'none'; // Esconder mensaje de éxito
+        spaceErrorMessageAcreditacion.style.display = 'block'; // Mostrar mensaje de longitud
+        spaceErrorMessageAcreditacion.textContent = "La vigencia no debe exceder los 10 caracteres.";
+        spaceErrorMessageAcreditacion.style.color = "red";
+        return false;
+            } 
         // Verificar si el valor contiene letras o caracteres no válidos
         else if (!/^\d+$/.test(resolucionValue)) {
             errorMessageAcreditacion.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
@@ -701,7 +732,14 @@ programasInput.addEventListener('input', validateProgramaInput);
             successMessageVigencia.style.display = 'none';
             spaceErrorMessageVigencia.style.display = 'none';
             return true;
-        } 
+        } if (vigenciaValue.length > 10) {
+            errorMessageVigencia.style.display = 'none'; // Esconder mensaje de error general
+        successMessageVigencia.style.display = 'none'; // Esconder mensaje de éxito
+        spaceErrorMessageVigencia.style.display = 'block'; // Mostrar mensaje de longitud
+        spaceErrorMessageVigencia.textContent = "La vigencia no debe exceder los 10 caracteres.";
+        spaceErrorMessageVigencia.style.color = "red";
+        return false;
+            } 
         // Verificar si el valor contiene letras o caracteres no válidos
         else if (!/^\d+$/.test(vigenciaValue)) {
             errorMessageVigencia.style.display = 'block'; // Mostrar mensaje de error si no es un número válido
